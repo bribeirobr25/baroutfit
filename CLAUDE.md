@@ -1,0 +1,120 @@
+# CLAUDE.md — [NOME_DO_PROJETO]
+
+> **Para o Claude Code:** este é o documento mestre do projeto. Leia-o por completo antes de escrever qualquer código, e leia também os documentos referenciados na seção "Documentação do projeto". Eles contêm requisitos, restrições e a base de conhecimento que tornam este projeto possível. Não pule a leitura — várias decisões aqui existem para evitar becos sem saída técnicos (CORS, lojas com anti-bot, dados que não existem publicamente) que custariam tempo se redescobertos.
+
+> **Substituir antes de começar:** troque todas as ocorrências de `[NOME_DO_PROJETO]` pelo nome final (o dono do projeto definirá). Faça um find-replace global em todos os arquivos `.md`.
+
+---
+
+## 1. Visão geral
+
+[NOME_DO_PROJETO] é uma landing page pública e compartilhável onde qualquer pessoa cola a **URL de um produto de vestuário** (camiseta básica, camisa de botão, moletom ou moletom com capuz) de uma loja online. A aplicação lê a página do produto, extrai as informações técnicas do tecido, compara com um **guia de qualidade** pré-definido (e, quando aplicável, com um **relatório de marcas já auditadas**), e mostra um resultado **simples de entender**: a peça é de boa qualidade? Amassa muito? O que falta saber?
+
+O propósito não é vender roupa nem rankear marcas "cool". É dar à pessoa um veredito honesto sobre qualidade de tecido, do mesmo jeito que um comprador experiente faria ao ler a etiqueta — separando o que é **fato verificável** do que é **marketing**.
+
+**Princípio inegociável (vale para todo o projeto):** a aplicação **nunca inventa dados**. Se a gramatura (GSM) não está na página, o resultado diz "não informado", não chuta. Se a página não pôde ser lida, diz isso claramente. Honestidade sobre lacunas é a credibilidade do produto. Toda decisão de design e de código deve respeitar isso.
+
+---
+
+## 2. Decisões já travadas (não reabrir sem motivo)
+
+Estas decisões foram tomadas pelo dono do projeto. O Claude Code deve segui-las:
+
+1. **Full-stack real desde o início.** Não é protótipo com dados simulados. A análise lê páginas de verdade.
+2. **Proxy server-side é obrigatório (por CORS).** O frontend **não pode** buscar a URL da loja diretamente do navegador — a maioria das lojas bloqueia cross-origin. A leitura da página acontece numa **função serverless** (ex.: `/api/analyze`). Ver `docs/DECISIONS.md` para o detalhamento.
+3. **Deploy no Vercel, plano free.** A arquitetura precisa caber nas limitações do free tier (serverless functions, sem servidor persistente, sem banco de dados obrigatório na v1).
+4. **i18n em 4 idiomas: EN, PT-BR, DE, ES.** Idioma inicial **detectado automaticamente** via `navigator.language` (fallback EN), com seletor manual sempre disponível. Ver `docs/I18N.md`.
+5. **Quatro categorias de peça:** t-shirt (camiseta básica), shirt (camisa de botão), pullover (moletom), hoodie (moletom com capuz). Ver `docs/PARSER.md`.
+6. **Cards de anúncio = placeholders visuais** na v1 ("Espaço publicitário" / "Ad space"). Sem integração de ads real ainda. Devem ser **visualmente distintos** do resultado da análise, para não confundir o usuário nem comprometer a imparcialidade.
+7. **UI/UX minimalista, mas com identidade de moda.** Não pode parecer um formulário genérico. Ver seção 6 e `docs/SPEC.md`.
+8. **Stack: à escolha do Claude Code.** O dono não tem preferência fixa. Escolha a stack que melhor atenda aos requisitos acima (Next.js App Router é um forte candidato por i18n nativo + API routes + deploy Vercel de primeira, mas a decisão é sua). **Documente a escolha e a justificativa** num `docs/DECISIONS.md` (seção "Stack escolhida") antes de codar.
+
+---
+
+## 3. Arquitetura (alto nível)
+
+```
+Usuário cola URL
+      │
+      ▼
+[ Frontend ]  ── valida URL, mostra estado "analisando" (animação) ──┐
+      │                                                               │
+      ▼                                                               │
+[ /api/analyze ] (serverless)                                         │
+      │  1. fetch do HTML da página (server-side, sem CORS)           │
+      │  2. extrai texto relevante (composição, GSM, tecido, fit…)    │
+      │  3. roda o PARSER (tokens multi-idioma → estrutura)           │
+      │  4. pontua contra o GUIA (KNOWLEDGE-BASE)                      │
+      │  5. se a marca está no RELATÓRIO auditado, complementa        │
+      │  6. devolve JSON: categoria, achados, faltantes, score,       │
+      │     veredito de amassado, nível de confiança                  │
+      ▼                                                               │
+[ Frontend ] ── renderiza resultado simples + estado de confiança ◄──┘
+```
+
+Detalhes de cada etapa: `docs/SPEC.md` (fluxo e estados), `docs/PARSER.md` (extração e pontuação), `docs/KNOWLEDGE-BASE.md` (guia + marcas).
+
+---
+
+## 4. Documentação do projeto (LER TODOS)
+
+Os arquivos abaixo estão em `docs/` (na mesma árvore deste CLAUDE.md). **São de leitura obrigatória** antes de implementar:
+
+- **`docs/SPEC.md`** — Especificação funcional: jornada do usuário, estados de tela (input → analisando → resultado/erro), formato do resultado, requisitos de UX, acessibilidade.
+- **`docs/PARSER.md`** — Núcleo técnico: todos os tokens a extrair nos 4 idiomas, regras de classificação por categoria, lógica de pontuação, regra de degradação de confiança, e o veredito de "amassa muito?".
+- **`docs/KNOWLEDGE-BASE.md`** — As faixas do guia de qualidade (GSM por peça, hierarquia fibra > tecido > construção > GSM > marca) e a tabela de marcas já auditadas com dados verificados.
+- **`docs/I18N.md`** — Estratégia de internacionalização, detecção de idioma, e as chaves de tradução com o copy base em EN/PT-BR/DE/ES.
+- **`docs/DECISIONS.md`** — Decisões de arquitetura e **limitações honestas** (CORS, lojas com JS/anti-bot, dados inexistentes). Inclui a seção que o Claude Code deve preencher com a stack escolhida.
+
+### Fontes de verdade (NÃO copiar, referenciar e extrair)
+
+Os arquivos abaixo são a origem do guia, do relatório e da auditoria. O `docs/KNOWLEDGE-BASE.md` já destila deles o que o app precisa, mas em caso de dúvida, eles mandam. Caminhos relativos a partir da raiz do projeto (onde está este CLAUDE.md):
+
+- `docs/rules/guia-qualidade-roupas-2026-v2.md` — o guia de qualidade (critérios, faixas de GSM, hierarquia, anti-amassado).
+- `docs/guides/relatorio_final_marcas_guia_qualidade_2026.md` — o relatório de marcas auditadas (Asket, Norse, SANVT, Merz, Hollister etc.), com dados verificados contra fonte oficial.
+- `docs/audit/revisao_relatorio_marcas_2026-06-06.md` — a auditoria que validou o relatório (contexto sobre o que é verificado vs. pendente).
+
+---
+
+## 5. Princípios de engenharia (do dono do projeto)
+
+Estes são padrões de trabalho estabelecidos. Seguir:
+
+- **Verificar, não confiar.** Tanto no código (validar entrada, tratar erro) quanto no produto (nunca afirmar dado não extraído).
+- **Distinguir o verificado do assumido**, sempre — inclusive na UI: o resultado deve deixar claro o que foi lido da página vs. o que é inferência do guia.
+- **pnpm**, não npm (se a stack usar Node).
+- **Commits atômicos.**
+- **Planejar antes de executar** (Option B: escrever plano → aprovar → executar). Antes de codar, produza um plano curto de implementação e a stack escolhida em `docs/DECISIONS.md`.
+- **Sem sycophancy no código nem nos comentários** — comentários objetivos, código direto.
+- Mensagens ao usuário final: claras, sem jargão, traduzíveis (toda string passa pelo i18n, nada hard-coded).
+
+---
+
+## 6. Requisitos de UI/UX (resumo — detalhe em SPEC.md)
+
+- **Minimalista com identidade de moda.** Tipografia é o protagonista (um display font editorial + um corpo legível). Evitar cara de "ferramenta genérica de AI". Sem gradiente roxo em fundo branco.
+- **Tela única, fluxo linear:** campo de URL em destaque → botão de análise → estado "analisando" com microanimação e os cards (placeholder de anúncio) → resultado.
+- **Estado "analisando":** texto que rotaciona entre "Analisando / Comparando / Avaliando" no idioma ativo, com animação leve (CSS preferível). É aqui que os cards de anúncio aparecem.
+- **Resultado:** veredito claro e escaneável — categoria detectada, nota/score, "amassa muito?", o que foi encontrado, o que falta, e o nível de confiança. Linguagem simples.
+- **Responsivo e mobile-first** (a pessoa vai colar URL no celular dentro da loja).
+- **Acessível:** contraste adequado, navegação por teclado, foco visível, `lang` correto por idioma.
+
+---
+
+## 7. Roadmap (orientação, não obrigação)
+
+- **v1 (este escopo):** análise de URL única, 4 categorias, 4 idiomas, resultado honesto, cards placeholder. Sem login, sem banco.
+- **Futuro (não implementar agora):** histórico, comparar 2 peças, ads reais, mais categorias, base de marcas expandida, modo "descobrir/comparar vários produtos".
+
+---
+
+## 8. Definition of done da v1
+
+- [ ] Stack escolhida e justificada em `docs/DECISIONS.md`.
+- [ ] `/api/analyze` lê uma página real e devolve JSON estruturado.
+- [ ] Parser cobre as 4 categorias e os tokens nos 4 idiomas (ver PARSER.md).
+- [ ] Nunca inventa GSM/fibra ausente; degrada confiança corretamente.
+- [ ] i18n funcionando com detecção por browser + seletor; nenhuma string hard-coded.
+- [ ] Estados de UI: input, analisando (com animação + cards placeholder), resultado, erro/"não foi possível ler".
+- [ ] Responsivo, acessível, deploy no Vercel free funcionando.
+- [ ] README com instruções de dev e deploy.
