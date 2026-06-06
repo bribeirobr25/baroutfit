@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -20,10 +20,26 @@ const sans = Inter({
   display: "swap",
 });
 
+const DESCRIPTION =
+  "Paste a clothing product link. We read the fabric and tell you if it's actually good — and whether it wrinkles.";
+
 export const metadata: Metadata = {
   title: `${APP_NAME} — is this fabric actually good?`,
-  description:
-    "Paste a clothing product link. We read the fabric and tell you if it's actually good — and whether it wrinkles.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: `${APP_NAME} — is this fabric actually good?`,
+    description: DESCRIPTION,
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: `${APP_NAME} — is this fabric actually good?`,
+    description: DESCRIPTION,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f6f4ef",
 };
 
 export default function RootLayout({

@@ -125,9 +125,8 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
       {/* 4. What we found (verified, read from the page) */}
       {found.length > 0 && (
         <div className="mb-8 border-t border-line pt-6">
-          <h2 className="text-sm font-medium text-ink mb-3">
-            {dict.result.found}
-          </h2>
+          <h2 className="text-sm font-medium text-ink">{dict.result.found}</h2>
+          <p className="mb-3 text-xs text-muted">{dict.result.verifiedTag}</p>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
             {found.map((it) => (
               <div key={it.label} className="flex items-baseline gap-2">

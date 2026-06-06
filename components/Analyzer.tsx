@@ -71,7 +71,7 @@ export function Analyzer() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full" aria-live="polite">
       {state.status === "input" && (
         <form onSubmit={onSubmit} className="w-full" noValidate>
           <div className="flex flex-col sm:flex-row gap-3">
