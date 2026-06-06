@@ -108,7 +108,10 @@ export function parse(rawText: string, opts: ParseOptions = {}): ParseResult {
   const score = scoreFabric(data);
   const wrinkle = wrinkleVerdict(data);
   const confidence = confidenceLevel({
-    fiberVerified: findings.fiber.verified,
+    // Knowing the fiber TYPE (e.g. "long-staple", "Supima") is fiber knowledge
+    // read from the page, even when no "NN% cotton" composition string is
+    // present (PARSER §7). Some shops state the type but not the percentage.
+    fiberVerified: findings.fiber.verified || findings.fiberType.verified,
     gsmVerified: findings.gsm.verified,
     weaveVerified: findings.weave.verified,
     constructionCount: construction.length,

@@ -160,6 +160,15 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.confidence).toBe("partial");
   });
 
+  it("fiber TYPE + GSM (no composition %) counts as verified confidence", () => {
+    // SANVT-style page: states "ELS cotton" + "185 GSM" but no "100% cotton".
+    const r = parse("The Perfect T-Shirt. ELS cotton. 185 GSM.");
+    expect(r.findings.fiber.value).toBeNull(); // no NN% string
+    expect(r.findings.fiberType.value).toBe("long-staple");
+    expect(r.findings.gsm.value).toBe(185);
+    expect(r.confidence).toBe("verified");
+  });
+
   it("light GSM generic tee lands low", () => {
     const r = parse("Basic t-shirt. 100% cotton. Jersey. 130 g/m².");
     expect(r.findings.gsm.value).toBe(130);
