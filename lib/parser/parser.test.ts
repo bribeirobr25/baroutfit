@@ -107,6 +107,30 @@ describe("parser — multi-language tokens", () => {
   });
 });
 
+describe("parser — pullover & hoodie categories", () => {
+  it("pullover: moletom, french terry, 400 g/m², wrinkle low", () => {
+    const r = parse("Moletom de algodão. 100% cotton. French Terry. 400 g/m².");
+    expect(r.category).toBe("pullover");
+    expect(r.findings.weave.value).toBe("french-terry");
+    expect(r.findings.gsm.value).toBe(400);
+    expect(r.wrinkle).toBe("low");
+  });
+
+  it("hoodie: Kapuzenpullover, french terry, 450 g/m²", () => {
+    const r = parse(
+      "Kapuzenpullover. 100% Baumwolle. French Terry. 450 g/m².",
+    );
+    expect(r.category).toBe("hoodie");
+    expect(r.findings.gsm.value).toBe(450);
+    expect(r.wrinkle).toBe("low");
+  });
+
+  it("hoodie wins over sweatshirt when a hood cue is present", () => {
+    const r = parse("Hooded sweatshirt. 100% cotton. 420 g/m².");
+    expect(r.category).toBe("hoodie");
+  });
+});
+
 describe("parser — scoring & wrinkle edge cases", () => {
   it("does NOT infer GSM from 'heavyweight' (golden rule)", () => {
     const r = parse("Heavyweight t-shirt. 100% cotton. Premium quality.");

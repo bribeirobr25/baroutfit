@@ -89,4 +89,20 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
 
 - **2026-06-06 — Next.js 16, não 15.** `create-next-app@latest` instalou Next 16.2.7 + React 19.2 (Turbopack default). Mantido: nada do plano depende de 15-específico; App Router, Route Handlers e `next/font` são equivalentes. Stack final: Next 16 (App Router) + TS + Tailwind v4 + cheerio + vitest, pnpm.
 - **2026-06-06 — i18n sem `src/`.** Projeto sem `src/dir`; `app/` e `lib/` na raiz, alias `@/*`.
-- **2026-06-06 — Tailwind v4 + CSS Modules onde fizer sentido.** Aprovado pelo dono "Tailwind + proposta de fontes". Tipografia editorial via `next/font` (self-hosted, sem chamada externa).
+- **2026-06-06 — Tailwind v4 + CSS Modules onde fizer sentido.** Aprovado pelo dono "Tailwind + proposta de fontes". Tipografia editorial via `next/font` (self-hosted, sem chamada externa). Fontes: **Fraunces** (display) + **Inter** (corpo).
+- **2026-06-06 — i18n sem roteamento por locale.** Provider próprio (React Context + 4 dicionários tipados, `en` como fonte de verdade), detecção via `navigator.language`, persistência em `localStorage`, `<html lang>` dinâmico. Paridade de chaves entre locales garantida por teste.
+- **2026-06-06 — Score band: ausência de dado ≠ baixa qualidade.** Ajuste feito após teste no navegador contra asket.com: fibra boa sozinha (sem GSM/tecelagem/construção) agora resulta em `indeterminate` (+ confiança `partial`), nunca `low`. `low` exige evidência negativa real (GSM leve, poliéster alto). Isso honra o princípio "nunca inventar / ser honesto sobre lacunas".
+- **2026-06-06 — Verificação no navegador (build de produção).** Os 4 estados (input/analyzing/result/error), troca + persistência de idioma, fetch server-side ao vivo e selo de marca auditada foram validados via Playwright em mobile (430px) e desktop (1280px). Obs.: em `next dev` sobre IP da LAN o HMR (Turbopack) não conecta e a hidratação não ocorre — testar interatividade com `pnpm build && pnpm start`. Não afeta produção (Vercel).
+- **2026-06-06 — `maxDuration = 15` no route handler** para respeitar o teto de execução do free tier (SPEC: timeout de análise 15–20s); runtime `nodejs` (cheerio + controle total de fetch).
+
+## 6. Status do Definition of Done (CLAUDE.md §8)
+
+- [x] Stack escolhida e justificada (§5.1).
+- [x] `/api/analyze` lê página real e devolve JSON estruturado (validado ao vivo contra asket.com).
+- [x] Parser cobre as 4 categorias e tokens nos 4 idiomas (38 testes).
+- [x] Nunca inventa GSM/fibra ausente; degrada confiança corretamente (validado).
+- [x] i18n com detecção por browser + seletor; nenhuma string hard-coded.
+- [x] Estados de UI: input, analyzing (animação + cards placeholder), result, error.
+- [x] Responsivo e acessível (aria-live, foco visível, contraste, `lang` correto).
+- [ ] **Deploy no Vercel free** — pendente de execução pelo dono (ação outward-facing, requer a conta Vercel dele).
+- [x] README com instruções de dev e deploy.
