@@ -3,6 +3,8 @@ import type { Dict } from "./en";
 // Español. Copy base de I18N.md §3.
 export const es: Dict = {
   app: {
+    headlineLead: "¿este tejido es",
+    headlineMain: "realmente bueno?",
     tagline:
       "Pega el enlace de una prenda. Leemos el tejido y te decimos si es realmente bueno — y si se arruga.",
   },

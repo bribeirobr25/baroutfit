@@ -3,6 +3,8 @@ import type { Dict } from "./en";
 // Deutsch. Copy-Basis aus I18N.md §3.
 export const de: Dict = {
   app: {
+    headlineLead: "ist dieser stoff",
+    headlineMain: "wirklich gut?",
     tagline:
       "Füge den Link eines Kleidungsstücks ein. Wir lesen den Stoff und sagen dir, ob er wirklich gut ist – und ob er knittert.",
   },

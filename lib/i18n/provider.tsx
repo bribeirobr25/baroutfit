@@ -46,6 +46,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
+    // Resolve the real locale after mount: navigator/localStorage are
+    // client-only, and reading them during render would cause a hydration
+    // mismatch (server has no access). This is the intended pattern for
+    // syncing from a browser API, so the set-state-in-effect rule is waived.
     const stored = readStoredLocale();
     const resolved =
       stored ??
@@ -54,6 +58,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
           ? navigator.languages
           : [navigator.language],
       );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocaleState(resolved);
   }, []);
 

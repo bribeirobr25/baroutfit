@@ -126,6 +126,22 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.wrinkle).toBe("medium");
   });
 
+  it("good fiber alone (no GSM/weave/construction) is indeterminate, NOT low", () => {
+    // Real-world case: a page exposes only "100% organic cotton, long staple"
+    // with no corroborating data. Missing data must not read as low quality.
+    const r = parse("Premium tee. 100% organic cotton, long staple.");
+    expect(r.findings.fiberType.value).toBe("long-staple");
+    expect(r.findings.gsm.value).toBeNull();
+    expect(r.score.band).toBe("indeterminate");
+    expect(r.confidence).toBe("partial");
+  });
+
+  it("light GSM generic tee lands low", () => {
+    const r = parse("Basic t-shirt. 100% cotton. Jersey. 130 g/m².");
+    expect(r.findings.gsm.value).toBe(130);
+    expect(r.score.band).toBe("low");
+  });
+
   it("returns unknown category with no garment keywords", () => {
     const r = parse("Some fabric. 100% cotton.");
     expect(r.category).toBe("unknown");

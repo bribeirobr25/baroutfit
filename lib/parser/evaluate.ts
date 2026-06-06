@@ -131,13 +131,14 @@ export function scoreFabric(d: ParserData): Score {
   const gsmHigh = gsmQuality != null && gsmQuality >= 3;
   const hasConstruction = d.construction.length > 0 || premiumSpin;
 
-  // Only neutral data ("100% cotton" alone) -> indeterminate, NOT low. A high
-  // synthetic content is itself enough to judge (negatively), so it counts as a
-  // signal and is not treated as "insufficient data".
   const highPolyester =
     d.polyester != null && d.polyester > POLYESTER_WARN_PCT;
-  const anySignal =
-    goodFiber ||
+
+  // Corroborating evidence beyond the fiber name. Fiber alone — even a good one
+  // — is NOT enough to grade overall quality (mirrors the verified-confidence
+  // rule: fiber + at least one of {GSM, weave, construction}). Without it the
+  // honest verdict is "not enough data", never "low quality" (PARSER §5).
+  const hasCorroboration =
     d.gsm != null ||
     d.weave != null ||
     d.construction.length > 0 ||
@@ -146,13 +147,13 @@ export function scoreFabric(d: ParserData): Score {
     highPolyester;
 
   let band: Score["band"];
-  if (!anySignal) {
+  if (!hasCorroboration) {
     band = "indeterminate";
   } else if (goodFiber && (appropriate || gsmHigh) && hasConstruction) {
     band = "high";
   } else if (
     highPolyester ||
-    (gsmQuality != null && gsmQuality <= 1 && !goodFiber && !appropriate) ||
+    (gsmQuality != null && gsmQuality <= 1 && !goodFiber) ||
     value < 25
   ) {
     band = "low";

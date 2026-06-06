@@ -4,6 +4,8 @@
 
 export const en = {
   app: {
+    headlineLead: "is this fabric",
+    headlineMain: "actually good?",
     tagline:
       "Paste a clothing product link. We read the fabric and tell you if it's actually good — and whether it wrinkles.",
   },
