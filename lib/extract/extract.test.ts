@@ -68,6 +68,37 @@ describe("extractText", () => {
     const r = extractText(html, "https://spa.example.com/p/123");
     expect(r.thin).toBe(true);
   });
+
+  it("reads JSON-LD Product material but ignores BreadcrumbList categories", () => {
+    // The breadcrumb names a "Denim" category; a related card mentions denim.
+    // Neither must become a finding — only the Product's own material counts.
+    const html = `<html><head>
+      <script type="application/ld+json">
+        {"@graph":[
+          {"@type":"BreadcrumbList","itemListElement":[
+            {"@type":"ListItem","name":"Shirts"},{"@type":"ListItem","name":"Denim & Work"}]},
+          {"@type":"Product","name":"Zip Work Shirt","material":"65% polyester, 35% cotton"}
+        ]}
+      </script></head><body>
+        <main><h1>Zip Work Shirt</h1><div class="product-detail">65% polyester, 35% cotton</div></main>
+        <section class="product-card"><h2>Selvedge Denim Jacket</h2></section>
+      </body></html>`;
+    const r = extractText(html, "https://shop.com/p/zip-work-shirt");
+    expect(r.text.toLowerCase()).toContain("65% polyester");
+    expect(r.text.toLowerCase()).not.toContain("denim");
+    const parsed = parse(r.text, { categoryHint: r.categoryHint });
+    expect(parsed.findings.weave.value).toBeNull(); // no false "denim" weave
+    expect(parsed.findings.polyester.value).toBe(65);
+  });
+
+  it("inserts spaces between block elements so adjacent text doesn't glue", () => {
+    const html = `<html><body><main>
+      <ul class="product-detail"><li>35% cotton</li></ul><p>Imported</p>
+      </main></body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    expect(r.text.toLowerCase()).not.toContain("cottonimported");
+    expect(parse(r.text).findings.fiber.value).toContain("35% cotton");
+  });
 });
 
 describe("hasFabricSignal", () => {

@@ -129,6 +129,13 @@ describe("parser — pullover & hoodie categories", () => {
     const r = parse("Hooded sweatshirt. 100% cotton. 420 g/m².");
     expect(r.category).toBe("hoodie");
   });
+
+  it("hood cue beats pullover even when 'sweatshirt' is repeated more", () => {
+    const r = parse(
+      "Sweatshirt. Heavy sweatshirt. Premium hooded sweatshirt. 100% cotton. 420 g/m².",
+    );
+    expect(r.category).toBe("hoodie");
+  });
 });
 
 describe("parser — scoring & wrinkle edge cases", () => {

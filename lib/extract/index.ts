@@ -64,26 +64,55 @@ export function categoryFromUrl(url: string): CategoryResult {
 }
 
 // --- JSON-LD Product fields --------------------------------------------------
-const JSONLD_KEYS = new Set([
-  "name",
-  "description",
-  "material",
-  "category",
-  "value",
-]);
+// Only collect from Product nodes. Collecting from the whole graph would pull in
+// BreadcrumbList/category names (e.g. "Denim", "Shirts") that become false
+// weave/category findings.
 
-function collectJsonLdStrings(node: unknown, out: string[], depth = 0): void {
-  if (depth > 8 || node == null) return;
-  if (Array.isArray(node)) {
-    for (const item of node) collectJsonLdStrings(item, out, depth + 1);
-    return;
-  }
-  if (typeof node === "object") {
-    for (const [key, val] of Object.entries(node as Record<string, unknown>)) {
-      if (JSONLD_KEYS.has(key) && typeof val === "string") out.push(val);
-      else collectJsonLdStrings(val, out, depth + 1);
+function pushStr(out: string[], v: unknown): void {
+  if (typeof v === "string" && v.trim()) out.push(v);
+  else if (Array.isArray(v)) for (const x of v) pushStr(out, x);
+}
+
+function isProductType(type: unknown): boolean {
+  const t = Array.isArray(type) ? type : [type];
+  return t.some(
+    (x) =>
+      typeof x === "string" &&
+      ["product", "productgroup", "individualproduct"].includes(x.toLowerCase()),
+  );
+}
+
+function collectProductFields(p: Record<string, unknown>, out: string[]): void {
+  pushStr(out, p.name);
+  pushStr(out, p.description);
+  pushStr(out, p.material);
+  pushStr(out, p.category);
+  // additionalProperty: [{ name, value }] — spec sheet rows.
+  const ap = p.additionalProperty;
+  if (Array.isArray(ap)) {
+    for (const x of ap) {
+      if (x && typeof x === "object") {
+        pushStr(out, (x as Record<string, unknown>).name);
+        pushStr(out, (x as Record<string, unknown>).value);
+      }
     }
   }
+}
+
+// Walk the graph; collect ONLY from Product nodes (do not recurse into a found
+// product's related-product references).
+function collectFromProducts(node: unknown, out: string[], depth = 0): void {
+  if (depth > 10 || node == null || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectFromProducts(item, out, depth + 1);
+    return;
+  }
+  const obj = node as Record<string, unknown>;
+  if (isProductType(obj["@type"])) {
+    collectProductFields(obj, out);
+    return;
+  }
+  for (const val of Object.values(obj)) collectFromProducts(val, out, depth + 1);
 }
 
 function jsonLdText($: cheerio.CheerioAPI): string {
@@ -92,8 +121,7 @@ function jsonLdText($: cheerio.CheerioAPI): string {
     const raw = $(el).contents().text();
     if (!raw.trim()) return;
     try {
-      const data = JSON.parse(raw);
-      collectJsonLdStrings(data, chunks);
+      collectFromProducts(JSON.parse(raw), chunks);
     } catch {
       // malformed JSON-LD — ignore, never throw on a single shop's quirk
     }
@@ -152,12 +180,12 @@ export function extractText(html: string, url: string): ExtractResult {
       "[class*='also-like' i]",
       // Product cards/tiles/grids are collections of OTHER products (related
       // grids), not the main product — their composition/category must not leak.
+      // NB: deliberately NOT stripping 'product-item'/'product-list' — some
+      // PDP themes (Magento) use those for the MAIN product container.
       "[class*='product-card' i]",
       "[class*='productcard' i]",
       "[class*='product-tile' i]",
       "[class*='product-grid' i]",
-      "[class*='product-item' i]",
-      "[class*='product-list' i]",
       "[class*='product-slider' i]",
       "[class*='product-carousel' i]",
       "[id*='related' i]",
@@ -172,10 +200,12 @@ export function extractText(html: string, url: string): ExtractResult {
   // JSON-LD/meta, so dropping links does not lose it.
   $("a").remove();
 
-  // Insert spaces between elements so adjacent text nodes don't glue together
-  // (cheerio's .text() concatenates without separators, producing e.g.
-  // "35% cottonImported" which breaks composition parsing).
-  $("br, p, div, li, td, th, tr, h1, h2, h3, h4, h5, section, dt, dd, span").after(
+  // Insert spaces between BLOCK elements so adjacent text nodes don't glue
+  // together (cheerio's .text() concatenates without separators, producing e.g.
+  // "35% cottonImported" which breaks composition parsing). Inline elements
+  // (span) are intentionally excluded — spacing them could split inline content
+  // like a number rendered across spans ("1"+"80" -> "1 80").
+  $("br, p, div, li, td, th, tr, h1, h2, h3, h4, h5, section, article, dt, dd").after(
     " ",
   );
 

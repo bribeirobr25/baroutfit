@@ -56,6 +56,14 @@ export function detectCategory(normalizedText: string): CategoryDetection {
 
   if (topScore === 0) return { category: "unknown", confidence: "low" };
 
+  // A hood cue is the distinguishing feature within the sweat family: a hooded
+  // sweatshirt is a hoodie even when "sweatshirt" is repeated more than "hooded".
+  // Only applies when pullover leads and a hood cue is present (does not override
+  // a dominant shirt/tshirt).
+  if (topCat === "pullover" && hoodie > 0) {
+    return { category: "hoodie", confidence: "high" };
+  }
+
   // Tie-breaks between the two leaders, using construction cues.
   if (topScore === secondScore) {
     const pair = new Set([topCat, secondCat]);
