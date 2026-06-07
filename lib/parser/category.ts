@@ -31,43 +31,45 @@ const BUTTON_CUE_RE =
 const CREW_TEE_CUE_RE = /crew neck tee|gola careca|cuello redondo/;
 
 export function detectCategory(normalizedText: string): CategoryDetection {
-  // Hoodie is the most specific: a hood cue decides it, even over "sweatshirt"
-  // (a "hooded sweatshirt" is a hoodie, not a pullover).
-  const hoodie = countMatches(normalizedText, HOODIE_RE);
-  if (hoodie > 0) return { category: "hoodie", confidence: "high" };
-
   // Strip t-shirt tokens so plain "shirt" counts only real shirts.
-  const tshirtHits =
+  const tshirt =
     countMatches(normalizedText, TSHIRT_RE) +
     countMatches(normalizedText, CAMISETA_WEAK_RE);
   const cleaned = normalizedText.replace(TSHIRT_RE, " ");
 
   const shirt = countMatches(cleaned, SHIRT_RE);
   const pullover = countMatches(cleaned, PULLOVER_RE);
-  const tshirt = tshirtHits;
+  const hoodie = countMatches(normalizedText, HOODIE_RE);
 
+  // Count-based: the dominant signal wins. A single stray "hoodie" link among
+  // many "shirt" mentions (e.g. nav/related products) must NOT decide the
+  // category — this matters for noisy full-page reader text.
   const scores: Array<[CategoryResult, number]> = [
     ["tshirt", tshirt],
     ["shirt", shirt],
     ["pullover", pullover],
+    ["hoodie", hoodie],
   ];
   scores.sort((a, b) => b[1] - a[1]);
   const [topCat, topScore] = scores[0];
-  const [, secondScore] = scores[1];
+  const [secondCat, secondScore] = scores[1];
 
   if (topScore === 0) return { category: "unknown", confidence: "low" };
 
-  // Disambiguate a tshirt/shirt clash with construction cues.
-  if (tshirt > 0 && shirt > 0) {
-    const hasButtons = BUTTON_CUE_RE.test(normalizedText);
-    const hasCrew = CREW_TEE_CUE_RE.test(normalizedText);
-    if (hasButtons && !hasCrew) return { category: "shirt", confidence: "high" };
-    if (hasCrew && !hasButtons) return { category: "tshirt", confidence: "high" };
-    // No decisive cue and counts are close -> low confidence on the leader.
-    if (topScore === secondScore) return { category: topCat, confidence: "low" };
+  // Tie-breaks between the two leaders, using construction cues.
+  if (topScore === secondScore) {
+    const pair = new Set([topCat, secondCat]);
+    // hooded sweatshirt -> hoodie beats pullover
+    if (pair.has("hoodie") && pair.has("pullover"))
+      return { category: "hoodie", confidence: "high" };
+    if (pair.has("tshirt") && pair.has("shirt")) {
+      const hasButtons = BUTTON_CUE_RE.test(normalizedText);
+      const hasCrew = CREW_TEE_CUE_RE.test(normalizedText);
+      if (hasButtons && !hasCrew) return { category: "shirt", confidence: "high" };
+      if (hasCrew && !hasButtons) return { category: "tshirt", confidence: "high" };
+    }
+    return { category: topCat, confidence: "low" };
   }
 
-  // Clear single leader.
-  const confidence = secondScore === 0 || topScore > secondScore ? "high" : "low";
-  return { category: topCat, confidence };
+  return { category: topCat, confidence: "high" };
 }

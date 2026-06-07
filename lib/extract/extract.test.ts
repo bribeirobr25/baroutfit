@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { extractText, categoryFromUrl } from "./index";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { extractText, categoryFromUrl, hasFabricSignal, fetchPage, focusReaderText } from "./index";
 import { parse } from "@/lib/parser";
 
 describe("categoryFromUrl", () => {
@@ -58,5 +58,71 @@ describe("extractText", () => {
       <body><div id="app"></div></body></html>`;
     const r = extractText(html, "https://spa.example.com/p/123");
     expect(r.thin).toBe(true);
+  });
+});
+
+describe("hasFabricSignal", () => {
+  it("detects composition / GSM / fiber signals", () => {
+    expect(hasFabricSignal("Composition: 100% cotton")).toBe(true);
+    expect(hasFabricSignal("235 GSM heavyweight")).toBe(true);
+    expect(hasFabricSignal("Made in Portugal. Boxy fit.")).toBe(false);
+  });
+});
+
+describe("fetchPage reader fallback", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("falls back to the reader proxy when the direct fetch is blocked", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        const u = String(input);
+        if (u.startsWith("https://r.jina.ai/")) {
+          // Reader renders the JS and returns the real composition.
+          return new Response(
+            "Boxy fit check shirt. Composition: 100% cotton.",
+            { status: 200, headers: { "content-type": "text/plain" } },
+          );
+        }
+        // Direct fetch is blocked by datacenter-IP anti-bot.
+        return new Response("blocked", { status: 403 });
+      }),
+    );
+
+    const r = await fetchPage(
+      "https://www.zara.com/de/en/boxy-fit-check-shirt-p01820350.html",
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.extract.text.toLowerCase()).toContain("100% cotton");
+      const parsed = parse(r.extract.text, { categoryHint: r.extract.categoryHint });
+      expect(parsed.category).toBe("shirt");
+      expect(parsed.findings.fiber.value).toBe("100% cotton");
+    }
+  });
+
+  it("stays unreadable when both direct and reader fail", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("nope", { status: 403 })),
+    );
+    const r = await fetchPage("https://www.hollisterco.com/p/blocked");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("anti-bot");
+  });
+});
+
+describe("focusReaderText", () => {
+  it("windows around the real composition, excluding far-away noise", () => {
+    const far = "shoes bag scarf ".repeat(120); // ~1900 chars, beyond the window
+    const text = `Nav ${far} Product details. Composition: 100% cotton. Care: machine wash. ${far} Related: denim jacket ${far}`;
+    const focused = focusReaderText(text);
+    expect(focused.toLowerCase()).toContain("100% cotton");
+    expect(focused.toLowerCase()).not.toContain("denim");
+  });
+
+  it("falls back to the top of the page when no composition anchor exists", () => {
+    const text = "A".repeat(5000);
+    expect(focusReaderText(text).length).toBeLessThanOrEqual(1500);
   });
 });

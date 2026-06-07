@@ -23,9 +23,10 @@ const FIBER_KEYWORDS: Array<[string, string[]]> = [
   ["cashmere", ["cashmere", "kaschmir", "cachemira", "caxemira"]],
 ];
 
-// Matches "<number>% <fiber phrase>" up to the next number / separator.
-const COMPOSITION_RE =
-  /(\d{1,3}(?:[.,]\d+)?)\s*%\s*([a-z][a-z\-\s]*?)(?=\d|[,;.\/()]|$)/g;
+// Matches "<number>% <fiber phrase>". The phrase is letters/spaces/hyphens and
+// stops naturally at any other character (digit, punctuation, markdown, etc.),
+// capped to avoid running across unrelated words.
+const COMPOSITION_RE = /(\d{1,3}(?:[.,]\d+)?)\s*%\s*([a-z][a-z\- ]{0,40})/g;
 
 function baseFiberOf(phrase: string): string | null {
   for (const [canonical, kws] of FIBER_KEYWORDS) {

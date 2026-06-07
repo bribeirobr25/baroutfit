@@ -12,7 +12,8 @@ type UiState =
   | { status: "result"; data: AnalyzeOk }
   | { status: "error" };
 
-const CLIENT_TIMEOUT_MS = 18_000; // SPEC §2: 15-20s ceiling on the analyzing state
+// Covers the server fast path plus the reader-proxy fallback for blocked shops.
+const CLIENT_TIMEOUT_MS = 29_000;
 
 function isValidHttpUrl(value: string): boolean {
   try {

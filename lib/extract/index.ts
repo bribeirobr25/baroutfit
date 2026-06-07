@@ -40,8 +40,16 @@ const BROWSER_HEADERS: Record<string, string> = {
   "Sec-Fetch-User": "?1",
 };
 
-const FETCH_TIMEOUT_MS = 12_000;
+const FETCH_TIMEOUT_MS = 9_000; // fast path; reader fallback gets more time
+const READER_TIMEOUT_MS = 18_000; // Jina renders JS, so it is slower
 const THIN_TEXT_THRESHOLD = 200; // chars of meaningful product text
+
+// Free, keyless reader proxy: fetches + renders JS server-side from its OWN IP,
+// returning clean text. Used ONLY as a fallback when the direct fetch is
+// blocked (datacenter-IP anti-bot) or thin (JS-heavy SPA). Set JINA_API_KEY for
+// higher rate limits. Does not defeat shops that also block the reader's IP
+// (e.g. Akamai-grade) — those stay honestly `unreadable`.
+const READER_BASE = "https://r.jina.ai/";
 
 // --- Category hint from the URL path (high-signal, low-noise) ----------------
 export function categoryFromUrl(url: string): CategoryResult {
@@ -157,7 +165,15 @@ function reasonForStatus(status: number): UnreadableReason | null {
   return null;
 }
 
-export async function fetchPage(url: string): Promise<FetchResult> {
+// Does the text contain any fabric signal worth parsing?
+const FABRIC_SIGNAL_RE =
+  /\d{1,3}\s*%|\bcotton\b|algod|baumwolle|\bpolyester\b|\bwool\b|\blinen\b|\bleinen\b|tencel|lyocell|\bgsm\b|g\s*\/\s*m|oz\b/i;
+
+export function hasFabricSignal(text: string): boolean {
+  return FABRIC_SIGNAL_RE.test(text);
+}
+
+async function directFetch(url: string): Promise<FetchResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -188,4 +204,74 @@ export async function fetchPage(url: string): Promise<FetchResult> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Reader proxy returns the WHOLE page as markdown (nav, related products,
+// reviews). Narrow it to the product section around the composition/material
+// block so unrelated mentions (e.g. a "denim" related product) can't become
+// false findings. Honesty over completeness (CLAUDE §1).
+// Strong anchor: a percentage immediately followed by a REAL fiber word — this
+// is the actual composition, not a stray "%" in a tracking URL or a nav label.
+const COMPOSITION_PCT_RE =
+  /\d{1,3}\s*%\s*(?:cotton|algod|baumwolle|polyester|poliester|\bwool\b|wolle|\blana\b|linen|linho|leinen|\blino\b|elastan|spandex|lycra|viscose|viskose|tencel|lyocell|modal|nylon|polyamid)/i;
+// Weaker anchor: an explicit composition label.
+const COMPOSITION_LABEL_RE =
+  /composition|zusammensetzung|composici[oó]n|composi[cç][aã]o/i;
+
+export function focusReaderText(text: string): string {
+  const m = text.match(COMPOSITION_PCT_RE) ?? text.match(COMPOSITION_LABEL_RE);
+  if (m && m.index != null) {
+    return text.slice(Math.max(0, m.index - 400), m.index + 600);
+  }
+  // No anchor: the product description usually sits near the title, at the top.
+  return text.slice(0, 1500);
+}
+
+// Fallback read via the reader proxy. Returns plain text (markdown), so cheerio
+// is not used; the parser works on text directly.
+async function fetchViaReader(url: string): Promise<ExtractResult | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), READER_TIMEOUT_MS);
+  try {
+    const headers: Record<string, string> = { Accept: "text/plain" };
+    const key = process.env.JINA_API_KEY;
+    if (key) headers.Authorization = `Bearer ${key}`;
+
+    const res = await fetch(`${READER_BASE}${url}`, {
+      headers,
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+
+    const raw = (await res.text()).replace(/\s+/g, " ").trim();
+    if (raw.length < 40) return null;
+
+    const text = focusReaderText(raw);
+    return { text, categoryHint: categoryFromUrl(url), thin: false };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function fetchPage(url: string): Promise<FetchResult> {
+  const direct = await directFetch(url);
+
+  // Fast path: a healthy direct read with real product text.
+  if (direct.ok && !direct.extract.thin && hasFabricSignal(direct.extract.text)) {
+    return direct;
+  }
+
+  // Fallback: blocked, thin, or no fabric signal -> try the reader proxy.
+  const reader = await fetchViaReader(url);
+  if (reader && hasFabricSignal(reader.text)) {
+    return { ok: true, extract: reader };
+  }
+
+  // Reader didn't help. Prefer returning a (thin) direct read over a hard
+  // failure so the parser can still report whatever little it found.
+  if (direct.ok) return direct;
+  return direct; // original unreadable reason
 }

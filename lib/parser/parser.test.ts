@@ -185,4 +185,25 @@ describe("parser — scoring & wrinkle edge cases", () => {
     const r = parse("Oxford button-down shirt with buttons. 100% cotton. Oxford.");
     expect(r.category).toBe("shirt");
   });
+
+  it("a single stray 'hoodie' mention does not beat many 'shirt' mentions", () => {
+    const noisy = "shirt shirt shirt boxy fit shirt check shirt. hoodie. 100% cotton.";
+    const r = parse(noisy);
+    expect(r.category).toBe("shirt");
+  });
+
+  it("extracts composition followed by markdown image syntax", () => {
+    // Reader (markdown) case: "100% cotton ![Image...](...)".
+    const r = parse("Boxy shirt. Composition: 100% cotton ![Image 7](https://x/y.jpg)");
+    expect(r.findings.fiber.value).toBe("100% cotton");
+  });
+
+  it("URL hint is authoritative for category over noisy text", () => {
+    // Text says hoodie a lot, but the product slug says shirt.
+    const r = parse("hoodie hoodie kapuzenpullover. 100% cotton.", {
+      categoryHint: "shirt",
+    });
+    expect(r.category).toBe("shirt");
+    expect(r.categoryConfidence).toBe("low"); // text disagrees -> low
+  });
 });

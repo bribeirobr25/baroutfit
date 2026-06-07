@@ -9,7 +9,9 @@ import { matchBrandByHost } from "@/lib/knowledge";
 import type { AnalyzeResult, BrandMatch } from "@/lib/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 15; // Vercel function ceiling (SPEC analyzing timeout)
+// Allows the direct fetch (~9s) plus the reader-proxy fallback (~18s) for
+// blocked/JS-heavy shops. Working shops still return in 1-3s via the fast path.
+export const maxDuration = 30;
 
 function isValidUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;

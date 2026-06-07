@@ -50,14 +50,22 @@ export function parse(rawText: string, opts: ParseOptions = {}): ParseResult {
   const text = normalize(rawText);
 
   // --- Category ---
-  let { category, confidence: categoryConfidence } = detectCategory(text);
-  if (
-    (category === "unknown" || categoryConfidence === "low") &&
-    opts.categoryHint &&
-    opts.categoryHint !== "unknown"
-  ) {
+  // The URL slug (categoryHint) is the most reliable single signal for a
+  // product page and is immune to nav/related-product noise, so it is
+  // authoritative when known; text detection is the fallback. Confidence drops
+  // when the page text confidently disagrees with the slug.
+  const textDet = detectCategory(text);
+  let category: CategoryResult;
+  let categoryConfidence: "high" | "low";
+  if (opts.categoryHint && opts.categoryHint !== "unknown") {
     category = opts.categoryHint;
-    categoryConfidence = category === detectCategory(text).category ? "high" : "low";
+    categoryConfidence =
+      textDet.category === opts.categoryHint || textDet.category === "unknown"
+        ? "high"
+        : "low";
+  } else {
+    category = textDet.category;
+    categoryConfidence = textDet.confidence;
   }
 
   // --- Tokens ---
