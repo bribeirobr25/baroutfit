@@ -119,12 +119,15 @@ const PRODUCT_SELECTORS = [
 // Pure extraction — no network. Tested directly in Phase 3 tests.
 export function extractText(html: string, url: string): ExtractResult {
   const $ = cheerio.load(html);
-  $("script, style, noscript, svg, iframe, template").remove();
 
+  // Read JSON-LD and meta BEFORE stripping <script> (JSON-LD lives in a script
+  // tag). Then remove scripts and the rest of the page chrome.
   const jsonld = jsonLdText($);
   const metaDesc = $('meta[name="description"]').attr("content") ?? "";
   const ogTitle = $('meta[property="og:title"]').attr("content") ?? "";
   const title = $("title").first().text();
+
+  $("script, style, noscript, svg, iframe, template").remove();
 
   // Strip global chrome AND related/recommended carousels before reading the
   // product containers. Related-product sections are a common source of false
@@ -147,10 +150,34 @@ export function extractText(html: string, url: string): ExtractResult {
       "[class*='upsell' i]",
       "[class*='complete-the-look' i]",
       "[class*='also-like' i]",
+      // Product cards/tiles/grids are collections of OTHER products (related
+      // grids), not the main product — their composition/category must not leak.
+      "[class*='product-card' i]",
+      "[class*='productcard' i]",
+      "[class*='product-tile' i]",
+      "[class*='product-grid' i]",
+      "[class*='product-item' i]",
+      "[class*='product-list' i]",
+      "[class*='product-slider' i]",
+      "[class*='product-carousel' i]",
       "[id*='related' i]",
       "[id*='recommend' i]",
     ].join(", "),
   ).remove();
+
+  // Strip link text. Product facts (composition, GSM, weave) live in
+  // descriptions and spec tables, never in links; nav/category/collection/
+  // related items ARE links (e.g. a "…/collections/denim" mega-menu link that
+  // would otherwise be read as weave=denim). Composition is also recovered from
+  // JSON-LD/meta, so dropping links does not lose it.
+  $("a").remove();
+
+  // Insert spaces between elements so adjacent text nodes don't glue together
+  // (cheerio's .text() concatenates without separators, producing e.g.
+  // "35% cottonImported" which breaks composition parsing).
+  $("br, p, div, li, td, th, tr, h1, h2, h3, h4, h5, section, dt, dd, span").after(
+    " ",
+  );
 
   const containerParts: string[] = [];
   $(PRODUCT_SELECTORS).each((_, el) => {

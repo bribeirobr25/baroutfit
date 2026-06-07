@@ -175,6 +175,14 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.score.band).toBe("low");
   });
 
+  it("polyester-dominant blend wrinkles low and scores low", () => {
+    const r = parse("1/4 zip work shirt. 65% polyester, 35% cotton.");
+    expect(r.findings.polyester.value).toBe(65);
+    expect(r.findings.fiber.value).toBe("65% polyester, 35% cotton");
+    expect(r.wrinkle).toBe("low"); // synthetic resists wrinkles
+    expect(r.score.band).toBe("low"); // high synthetic content
+  });
+
   it("returns unknown category with no garment keywords", () => {
     const r = parse("Some fabric. 100% cotton.");
     expect(r.category).toBe("unknown");

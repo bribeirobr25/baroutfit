@@ -172,6 +172,10 @@ export function wrinkleVerdict(d: ParserData): Wrinkle {
   if (d.nonIron) return "low";
   if (d.fiberType === "merino") return "low";
 
+  // Synthetic-dominant fabrics resist wrinkling (polyester ≥ 50%).
+  const polyPct = pctOf(d.composition, "polyester");
+  if (polyPct != null && polyPct >= 50) return "low";
+
   // TENCEL/lyocell in a relevant proportion (or present without a stated %).
   if (d.fiberType === "TENCEL" || hasFiber(d.composition, "tencel")) {
     const t = pctOf(d.composition, "tencel");
@@ -197,7 +201,8 @@ export function wrinkleVerdict(d: ParserData): Wrinkle {
   const cottonPct = pctOf(d.composition, "cotton");
   const cottonDominant =
     (cottonPct ?? 0) >= 50 ||
-    (cottonPct == null && isCottonish(d.fiberType)) ||
+    // fiber type implies cotton and no synthetic outweighs it
+    (cottonPct == null && isCottonish(d.fiberType) && polyPct == null) ||
     (hasFiber(d.composition, "cotton") && d.composition.length <= 1);
 
   if (woven && cottonDominant) {
