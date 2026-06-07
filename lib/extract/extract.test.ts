@@ -18,6 +18,15 @@ describe("categoryFromUrl", () => {
     );
     expect(categoryFromUrl("https://shop.com/p/leather-belt")).toBe("unknown");
   });
+
+  it("handles +/_ slug separators (e.g. 'T+Shirt')", () => {
+    expect(
+      categoryFromUrl(
+        "https://www.blue-tomato.com/en-GB/product/Shaka+Wear-Max+Heavyweight+T+Shirt-690618/",
+      ),
+    ).toBe("tshirt");
+    expect(categoryFromUrl("https://shop.com/p/heavy_t_shirt")).toBe("tshirt");
+  });
 });
 
 describe("extractText", () => {

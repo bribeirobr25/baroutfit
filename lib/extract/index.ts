@@ -53,7 +53,8 @@ const READER_BASE = "https://r.jina.ai/";
 
 // --- Category hint from the URL path (high-signal, low-noise) ----------------
 export function categoryFromUrl(url: string): CategoryResult {
-  const p = url.toLowerCase();
+  // Normalize slug separators (+, _, %20) so "t+shirt"/"t_shirt" match too.
+  const p = url.toLowerCase().replace(/%20|\+|_/g, "-");
   if (/hoodie|kapuzen|capuz|con-capucha|hooded/.test(p)) return "hoodie";
   if (/sweatshirt|pullover|moletom|sudadera|crewneck|\bsweat\b/.test(p))
     return "pullover";
@@ -125,8 +126,31 @@ export function extractText(html: string, url: string): ExtractResult {
   const ogTitle = $('meta[property="og:title"]').attr("content") ?? "";
   const title = $("title").first().text();
 
-  // Strip global chrome before reading product containers.
-  $("nav, footer, header[role='banner'], [class*='nav' i], [class*='footer' i], [class*='menu' i]").remove();
+  // Strip global chrome AND related/recommended carousels before reading the
+  // product containers. Related-product sections are a common source of false
+  // findings (e.g. a "denim" item recommended next to a polyester shirt) —
+  // attributing a neighbour's property would be inventing data (CLAUDE §1).
+  $(
+    [
+      "nav",
+      "footer",
+      "header[role='banner']",
+      "[class*='nav' i]",
+      "[class*='footer' i]",
+      "[class*='menu' i]",
+      "[class*='related' i]",
+      "[class*='recommend' i]",
+      "[class*='carousel' i]",
+      "[class*='slider' i]",
+      "[class*='you-may' i]",
+      "[class*='cross-sell' i]",
+      "[class*='upsell' i]",
+      "[class*='complete-the-look' i]",
+      "[class*='also-like' i]",
+      "[id*='related' i]",
+      "[id*='recommend' i]",
+    ].join(", "),
+  ).remove();
 
   const containerParts: string[] = [];
   $(PRODUCT_SELECTORS).each((_, el) => {

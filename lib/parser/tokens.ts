@@ -41,11 +41,18 @@ function baseFiberOf(phrase: string): string | null {
 
 export function extractComposition(text: string): CompositionPart[] {
   const parts: CompositionPart[] = [];
+  const seen = new Set<string>();
   for (const m of text.matchAll(COMPOSITION_RE)) {
     const pct = parseFloat(m[1].replace(",", "."));
     const phrase = m[2].trim();
     const fiber = baseFiberOf(phrase);
     if (!fiber) continue;
+    // The composition block often repeats across the page (JSON-LD + visible +
+    // meta). Dedupe by fiber+pct so the display isn't "100% cotton, 100%
+    // cotton, ...". A real composition lists each fiber once.
+    const key = `${fiber}:${Number.isFinite(pct) ? pct : "?"}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     parts.push({ fiber, raw: phrase, pct: Number.isFinite(pct) ? pct : null });
   }
   return parts;

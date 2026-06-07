@@ -192,6 +192,14 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.category).toBe("shirt");
   });
 
+  it("dedupes a composition that repeats across the page", () => {
+    // Same block appears in JSON-LD + visible + meta -> must not repeat.
+    const r = parse(
+      "Tee. 100% cotton. ... 100% cotton ... Composition: 100% cotton. 100% cotton.",
+    );
+    expect(r.findings.fiber.value).toBe("100% cotton");
+  });
+
   it("extracts composition followed by markdown image syntax", () => {
     // Reader (markdown) case: "100% cotton ![Image...](...)".
     const r = parse("Boxy shirt. Composition: 100% cotton ![Image 7](https://x/y.jpg)");
