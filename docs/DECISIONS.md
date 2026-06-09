@@ -139,6 +139,13 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
   - **Duas decisões de escopo do dono:** (1) algodão egípcio/Giza vira `fiberType: egyptian` (Giza 45 fica no campo `fiber` como texto, não vira enum); (2) tech entra só com fibra natural (Insider sim, Sepiia não).
   - **Próximo passo (Fase 5, no Claude Code):** integrar lotes 2–5 incrementalmente (ordem sugerida no índice), isolando cada mudança de schema (egyptian, modal) em commit próprio; partials só com aprovação explícita. Mesmo gate: test/lint/build verdes, asserts de `matchBrandByHost`, sync `brands.ts` ↔ KNOWLEDGE-BASE §7.
 
+- **2026-06-10 — Fase 5 executada: lotes 2/3/5 + partials integrados.** Fecha o "próximo passo" da Fase 4.
+  - **Verified:** lote 2 (Asphalte, ISTO. camisas, American Giant), lote 3 (egyptian + Finamore), lote 5 (modal + Insider). Cada mudança de enum (`egyptian`, `modal`) em commit isolado.
+  - **Partials aprovados pelo dono (per-brand):** Hast, Kiton, Luigi Borrelli, Pompeii, Dudalina (só Comfort Jacquard; `long-staple`, **não** `egyptian` — anti-inflação: "egípcio" de marketing sem fio/cert. por SKU ≠ Giza 45 cravado da Finamore; Wrinkle Free fora por ser non-iron químico).
+  - **Backlog opcional (NÃO integrados, decisão do dono):** Silbon (ES), Community Clothing (UK), Scalpers (ES, marginal). Podem entrar depois como `partial` se o dono quiser cobertura — dados nos handoffs `guides/cruzamentos/...-lote2.md` e `...-lote4.md`.
+  - Sepiia (poliéster) e Dudalina Wrinkle Free deliberadamente fora — não premium natural.
+  - **KB final: 19 marcas, 39 produtos.** 62 testes, tsc/lint/build verdes. KB só alimenta o selo `brandMatch` (nunca `findings`); nenhum GSM inventado; `null` preservados; parser intacto (decisão (a) — detecção de egyptian/modal no `detectFiberType` fica no roadmap CLAUDE §7). Commits: `40ceee6` (lote 2), `a033b56` (lote 3), `519c2cd` (lote 5), `a3ac8e8` (partials), além de `f04795d` (fontes/decisões Fase 4).
+
 ## 6. Status do Definition of Done (CLAUDE.md §8)
 
 - [x] Stack escolhida e justificada (§5.1).
