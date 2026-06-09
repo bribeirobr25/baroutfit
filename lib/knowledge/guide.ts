@@ -61,19 +61,29 @@ export function classifyGsm(
 }
 
 // --- Fiber quality ranking (KB §2, scoring §5) -------------------------------
-// Premium tier: Supima / Pima / merino / TENCEL (and extra-long-staple, handled
-// in the parser). Mid tier: organic, plain long-staple. Base: generic cotton.
+// Premium tier: Supima / Pima / merino / TENCEL / egyptian (and extra-long-staple,
+// handled in the parser). Mid tier: organic, plain long-staple. Base: generic
+// cotton. NB: `egyptian` is currently only produced by the KB (audited-brand
+// reference); the parser does not yet classify a page as egyptian — see
+// CLAUDE.md §7 roadmap.
 export const FIBER_QUALITY: Record<FiberType, GsmQuality> = {
   Supima: 4,
   Pima: 4,
   merino: 4,
   TENCEL: 4,
+  egyptian: 4,
   "long-staple": 2,
   organic: 2,
   generic: 1,
 };
 
-export const PREMIUM_FIBERS: FiberType[] = ["Supima", "Pima", "merino", "TENCEL"];
+export const PREMIUM_FIBERS: FiberType[] = [
+  "Supima",
+  "Pima",
+  "merino",
+  "TENCEL",
+  "egyptian",
+];
 
 // --- Weave ranking by category ----------------------------------------------
 // Shirt weave ranking (KB §4): Twill > Oxford > Chambray > Poplin.

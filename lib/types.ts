@@ -13,6 +13,7 @@ export type FiberType =
   | "Pima"
   | "TENCEL"
   | "merino"
+  | "egyptian"
   | "long-staple"
   | "organic"
   | "generic";

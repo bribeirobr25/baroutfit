@@ -499,6 +499,28 @@ export const AUDITED_BRANDS: AuditedBrand[] = [
       },
     ],
   },
+  // --- Batch 2026-06-07 lote 3 (Naples luxury; schema: +egyptian) ---
+  {
+    name: "Finamore",
+    domains: ["finamore.it"],
+    products: [
+      {
+        product: "Napoli 170 a due (Giza 45)",
+        category: "shirt",
+        // Giza 45 (the finest egyptian ELS) kept in the fiber string; the
+        // scorable category is `egyptian`.
+        fiber: "100% Egyptian cotton Giza 45",
+        fiberType: "egyptian",
+        gsm: null, // dress shirts don't publish GSM (verified by fiber, not weight)
+        weave: "poplin",
+        construction: ["two-ply (170/2)", "handmade Naples", "mother-of-pearl"],
+        origin: "Italy (Naples)",
+        wrinkle: "high",
+        tier: "S",
+        confidence: "verified",
+      },
+    ],
+  },
 ];
 
 // Match a URL host against the audited brands (suffix match so subdomains and

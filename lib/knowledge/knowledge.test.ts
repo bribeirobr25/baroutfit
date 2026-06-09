@@ -29,6 +29,10 @@ describe("FIBER_QUALITY", () => {
     expect(FIBER_QUALITY.organic).toBeGreaterThan(FIBER_QUALITY.generic);
     expect(FIBER_QUALITY.TENCEL).toBe(4);
   });
+
+  it("egyptian is premium tier (lote 3)", () => {
+    expect(FIBER_QUALITY.egyptian).toBe(4);
+  });
 });
 
 describe("matchBrandByHost", () => {
@@ -47,6 +51,10 @@ describe("matchBrandByHost", () => {
   it("matches lote 2 brands", () => {
     expect(matchBrandByHost("asphalte.com")?.name).toBe("Asphalte");
     expect(matchBrandByHost("american-giant.com")?.name).toBe("American Giant");
+  });
+
+  it("matches lote 3 brand", () => {
+    expect(matchBrandByHost("finamore.it")?.name).toBe("Finamore");
   });
 
   it("returns null for unknown hosts", () => {
