@@ -44,6 +44,11 @@ describe("matchBrandByHost", () => {
     expect(matchBrandByHost("isto.pt")?.name).toBe("ISTO.");
   });
 
+  it("matches lote 2 brands", () => {
+    expect(matchBrandByHost("asphalte.com")?.name).toBe("Asphalte");
+    expect(matchBrandByHost("american-giant.com")?.name).toBe("American Giant");
+  });
+
   it("returns null for unknown hosts", () => {
     expect(matchBrandByHost("www.zara.com")).toBeNull();
     expect(matchBrandByHost("example.com")).toBeNull();

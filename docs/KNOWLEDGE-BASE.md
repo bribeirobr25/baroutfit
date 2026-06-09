@@ -109,9 +109,18 @@ Use para complementar o que o parser extrair, quando a URL for de uma destas mar
 | **Maison Cornichon — Côte 195g** | tshirt | 100% organic cotton (GOTS); 195 GSM; côte 1x1; França (Dordonha) | low (malha) | A+ |
 | **Maison Cornichon — Jersey 290g** | tshirt | 100% organic cotton (GOTS); 290 GSM; jersey pesado; França | low (marca: "se froisse peu") | S |
 | **ISTO. — Supima T-Shirt** | tshirt | 100% Supima ELS cotton; 160 GSM; pre-shrunk; Portugal | low (malha) | A+ |
+| **ISTO. — Oxford Shirt** | shirt | 100% organic cotton (GOTS); 175 GSM; oxford; Portugal | high | A+ |
+| **ISTO. — Lightweight Flannel** | shirt | 100% organic cotton (GOTS); 140 GSM; flanela; Portugal | high | A |
+| **ISTO. — Midweight Flannel** | shirt | 100% organic cotton (GOTS); 160 GSM; flanela; Portugal | high | A+ |
+| **ISTO. — Checked Flannel** | shirt | 100% organic cotton (GOTS); 200 GSM; flanela; botões bio-resina; Portugal | high | A+ |
+| **Asphalte — Chemise Chambray** | shirt | 100% organic cotton; 155 GSM; chambray; Portugal | high | A+ |
+| **Asphalte — Chemise Oxford (v4)** | shirt | 100% organic cotton; 150 GSM; oxford; França/Portugal | high | A+ |
+| **American Giant — Classic Tee** | tshirt | 100% Supima (US-grown); 129 GSM (3.8 oz); USA | low (malha) | A |
+| **American Giant — Slub Tee** | tshirt | 100% Supima (US-grown) slub; 207 GSM (6.1 oz); USA | low (malha) | A+ |
+| **American Giant — Airy Supima Tee** | tshirt | 100% Supima (US-grown); 102 GSM (3 oz); USA | low (malha) | A- |
 
 > \* **Ressalva Merz 215 (GSM):** a página oficial descreve a 215 como "midweight, 2-thread, loopwheeled" mas **não crava GSM em gramas**. O valor ~244 vem de conversão de "7.2 oz" de revendedor, e as fontes divergem (7.2 vs 8.6 oz). Manter como **referência aproximada**, não como GSM cravado pela marca. Composição/origem (100% organic, Made in Germany) são fato.
 
 > Marcas com dados incompletos publicamente (Quiksilver, Zara, H&M, parte de Vans/UNIQLO/NN07): tratar como **partial** — confirmar sempre pela página/etiqueta, nunca assumir.
 
-> **Pendentes (pesquisadas, ainda sem dado verificado — NÃO adicionar sem aprovação):** Scalpers/Silbon/Pompeii (ES), Community Clothing (UK), American Giant (US), Hast/Asphalte (FR), camisa Dudalina/Aramis (BR, contagem de fios), luxo napolitano (Kiton/Borrelli/Zegna). Detalhe em cada `guides/cruzamentos/cruzamento-*.md`.
+> **Pendentes (pesquisadas, ainda sem dado verificado — NÃO adicionar sem aprovação):** Scalpers/Silbon/Pompeii (ES), Community Clothing (UK), Hast (FR), camisa Dudalina/Aramis (BR, contagem de fios), luxo napolitano (Kiton/Borrelli/Zegna). Detalhe em cada `guides/cruzamentos/cruzamento-*.md`. *(Asphalte e American Giant saíram desta lista — integradas como `verified` no lote 2, 2026-06-07.)*
