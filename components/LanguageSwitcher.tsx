@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
     <div
       role="group"
       aria-label={dict.language.label}
-      className="flex items-center gap-0.5 text-xs"
+      className="flex items-center gap-0.5 font-mono text-[0.7rem]"
     >
       {locales.map((l) => {
         const active = l === locale;
@@ -28,9 +28,7 @@ export function LanguageSwitcher() {
             onClick={() => setLocale(l)}
             aria-pressed={active}
             className={`rounded-full px-2.5 py-1 tracking-wide transition-colors ${
-              active
-                ? "bg-accent text-white"
-                : "text-muted hover:text-ink"
+              active ? "bg-accent text-accent-ink" : "text-muted hover:text-ink"
             }`}
           >
             {LABELS[l]}

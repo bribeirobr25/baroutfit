@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, Inter } from "next/font/google";
+import { Bodoni_Moda, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { APP_NAME } from "@/lib/brand";
 
-// Display: Bodoni Moda — the high-contrast serif of the fashion press and the
-// Mad Men era. Body: Inter — clean, modern, gets out of the way. Self-hosted by
-// next/font at build time (no external runtime request).
+// Three voices: Bodoni Moda (couture display), Inter (clean body), Space Mono
+// (the technical underside — care labels, composition, the verdict's data).
+// Self-hosted by next/font at build time (no external runtime request).
 const display = Bodoni_Moda({
   subsets: ["latin"],
   variable: "--font-display",
@@ -18,6 +18,13 @@ const display = Bodoni_Moda({
 const sans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = Space_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -40,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f5f5f7",
+  themeColor: "#0a0a0b",
 };
 
 export default function RootLayout({
@@ -50,7 +57,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${sans.variable} h-full antialiased`}
+      className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <I18nProvider>{children}</I18nProvider>

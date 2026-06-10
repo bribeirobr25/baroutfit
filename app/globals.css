@@ -1,25 +1,32 @@
 @import "tailwindcss";
 
-/* ── Identity: "Editorial Noir" ───────────────────────────────────────────────
-   Gallery white, near-black ink, an electric Klein-blue accent (anything but
-   apathetic), Bodoni Moda as the display face — the type of the fashion press
-   and the Mad Men era. Quality is a feeling; the page should sell it.
-   Semantic verdict colours stay legible: emerald = good, red = caution. */
+/* ── Identity: "Noir Couture" ─────────────────────────────────────────────────
+   The screen is a runway: absolute black, cream type, an electric chartreuse
+   signal. The verdict isn't a card — it's the thing every clothes lover actually
+   reads: a composition LABEL. Cream, stitched, monospaced. Bodoni (couture)
+   against mono (the technical underside of a garment). */
 
 :root {
-  --paper: #f5f5f7; /* gallery gray (Apple-clean) */
-  --paper-raised: #ffffff; /* cards */
-  --ink: #0a0a0b; /* near-black */
-  --muted: #6e6e73;
-  --line: #e4e4e8;
-  --accent: #1f3bff; /* electric blue — brand + interactive */
-  --accent-deep: #0a22d6;
-  --noir: #0a0a0b; /* dramatic dark moments (the verdict) */
+  /* Dark stage (home, input, analyzing, error) */
+  --paper: #0a0a0b; /* absolute black-ish stage */
+  --paper-raised: #141416;
+  --ink: #f3f0e8; /* warm cream type */
+  --muted: #8b877d; /* warm gray */
+  --line: #262629; /* hairlines on black */
+  --accent: #ccff00; /* electric chartreuse — the signal */
+  --accent-ink: #0a0a0b; /* text on the chartreuse */
 
-  --good: #0c7c59; /* high quality / barely wrinkles */
-  --warn: #9a6b00; /* decent / creases a little */
-  --bad: #d92d20; /* low / creases freely */
-  --indeterminate: #6e6e73;
+  /* The label (result) — a cream tag that leaps off the black */
+  --tag: #f4f1e8;
+  --tag-ink: #15140f;
+  --tag-muted: #6c6658;
+  --tag-line: #d8d2c2;
+
+  /* Verdict semantics (used on the cream tag) */
+  --good: #1f6b45;
+  --warn: #8a5a08;
+  --bad: #b1271a;
+  --indeterminate: #6c6658;
 }
 
 @theme inline {
@@ -29,14 +36,18 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
-  --color-accent-deep: var(--accent-deep);
-  --color-noir: var(--noir);
+  --color-accent-ink: var(--accent-ink);
+  --color-tag: var(--tag);
+  --color-tag-ink: var(--tag-ink);
+  --color-tag-muted: var(--tag-muted);
+  --color-tag-line: var(--tag-line);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
   --color-indeterminate: var(--indeterminate);
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
 body {
@@ -47,8 +58,12 @@ body {
 }
 
 .font-display {
-  font-feature-settings: "lnum" 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 /* Visible keyboard focus everywhere (accessibility, SPEC §5). */
@@ -68,7 +83,7 @@ body {
   }
 }
 
-/* Rotating analyzing text: cross-fade between steps. */
+/* Rotating analyzing text: cross-fade. */
 @keyframes roupas-fade {
   0%,
   100% {
@@ -82,24 +97,43 @@ body {
   }
 }
 
-/* Pulse for the analyzing indicator. */
-@keyframes roupas-pulse {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: scale(0.85);
+/* The scan line sweeping the cloth while it reads. */
+@keyframes roupas-scan {
+  0% {
+    transform: translateX(-120%);
   }
-  50% {
-    opacity: 1;
-    transform: scale(1);
+  100% {
+    transform: translateX(120%);
   }
 }
 
-/* The verdict reveal — a slow, confident rise. */
+/* The label drops in — like a tag flipped over. */
+@keyframes roupas-tag {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-0.4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+.roupas-tag {
+  animation: roupas-tag 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes roupas-sweep {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Headline letters rise on load. */
 @keyframes roupas-rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -108,12 +142,5 @@ body {
 }
 
 .roupas-rise {
-  animation: roupas-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Score counter sweep on the meter. */
-@keyframes roupas-sweep {
-  from {
-    transform: scaleX(0);
-  }
+  animation: roupas-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

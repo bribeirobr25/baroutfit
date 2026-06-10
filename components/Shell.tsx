@@ -5,8 +5,8 @@ import { APP_NAME } from "@/lib/brand";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Analyzer } from "./Analyzer";
 
-// Single-page shell: wordmark + language switcher, a magazine-cover headline,
-// the pitch, and the analyzer. Typography-led, mobile-first.
+// Single-page shell, "Noir Couture": a masthead, a runway headline, the pitch,
+// and the analyzer. Black stage, cream type, a chartreuse signal.
 export function Shell() {
   const { dict } = useI18n();
 
@@ -21,13 +21,16 @@ export function Shell() {
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-12 sm:py-20">
-        <h1 className="font-display text-[clamp(2.75rem,9vw,5.5rem)] leading-[0.95] tracking-[-0.02em] text-ink">
+        <p className="mb-6 font-mono text-[0.7rem] uppercase tracking-[0.28em] text-accent">
+          <span className="text-muted">/</span> Fabric Report — No. 001
+        </p>
+        <h1 className="roupas-rise font-display text-[clamp(2.9rem,9.5vw,5.75rem)] leading-[0.92] tracking-[-0.02em] text-ink">
           <span className="block font-light italic text-muted">
             {dict.app.headlineLead}
           </span>
           <span className="block font-black">{dict.app.headlineMain}</span>
         </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+        <p className="mt-7 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
           {dict.app.tagline}
         </p>
 
@@ -36,8 +39,8 @@ export function Shell() {
         </div>
       </main>
 
-      <footer className="flex items-center justify-between border-t border-line pt-5 text-xs text-muted">
-        <span className="lowercase tracking-wide">
+      <footer className="flex items-center justify-between border-t border-line pt-5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted">
+        <span>
           {APP_NAME} — {new Date().getFullYear()}
         </span>
         <span className="hidden sm:inline">read the cloth, not the label</span>

@@ -95,31 +95,33 @@ export function Analyzer() {
                 aria-label={dict.input.placeholder}
                 aria-invalid={invalid}
                 aria-describedby={invalid ? "url-error" : undefined}
-                className="flex-1 rounded-full border border-line bg-paper-raised px-5 py-4 text-ink placeholder:text-muted/70 focus:border-accent"
+                className="flex-1 rounded-full border border-line bg-paper-raised px-5 py-4 text-ink placeholder:text-muted focus:border-accent"
               />
               <button
                 type="submit"
-                className="rounded-full bg-accent px-7 py-4 font-medium text-white transition-colors hover:bg-accent-deep"
+                className="rounded-full bg-accent px-7 py-4 font-semibold text-accent-ink transition-transform hover:scale-[1.02] active:scale-95"
               >
                 {dict.input.button}
               </button>
             </div>
             {invalid && (
-              <p id="url-error" role="alert" className="mt-3 text-sm text-bad">
+              <p id="url-error" role="alert" className="mt-3 text-sm text-accent">
                 {dict.input.errorInvalid}
               </p>
             )}
           </form>
 
           {/* Engagement: one-tap example reads (audited houses + a mall brand). */}
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted">{dict.input.tryExamples}</span>
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted">
+              {dict.input.tryExamples}
+            </span>
             {EXAMPLES.map((ex) => (
               <button
                 key={ex.label}
                 type="button"
                 onClick={() => pickExample(ex.url)}
-                className="rounded-full border border-line bg-paper-raised px-3.5 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+                className="rounded-full border border-line px-3.5 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
               >
                 {ex.label}
               </button>
@@ -147,9 +149,12 @@ export function Analyzer() {
         <div className="space-y-6">
           <div
             role="alert"
-            className="roupas-rise rounded-3xl border border-line bg-paper-raised p-7 sm:p-9"
+            className="roupas-tag rounded-2xl border border-line bg-paper-raised p-7 sm:p-9"
           >
-            <p className="font-display text-2xl italic text-ink">
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-accent">
+              No reading
+            </p>
+            <p className="mt-3 font-display text-2xl italic text-ink">
               {dict.result.confidence.unreadable}
             </p>
             <p className="mt-3 text-muted">{dict.error.unreadable}</p>
