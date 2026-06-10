@@ -91,7 +91,7 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
 
 - **2026-06-06 — Next.js 16, não 15.** `create-next-app@latest` instalou Next 16.2.7 + React 19.2 (Turbopack default). Mantido: nada do plano depende de 15-específico; App Router, Route Handlers e `next/font` são equivalentes. Stack final: Next 16 (App Router) + TS + Tailwind v4 + cheerio + vitest, pnpm.
 - **2026-06-06 — i18n sem `src/`.** Projeto sem `src/dir`; `app/` e `lib/` na raiz, alias `@/*`.
-- **2026-06-06 — Tailwind v4 + CSS Modules onde fizer sentido.** Aprovado pelo dono "Tailwind + proposta de fontes". Tipografia editorial via `next/font` (self-hosted, sem chamada externa). Fontes: **Fraunces** (display) + **Inter** (corpo).
+- **2026-06-06 — Tailwind v4 + CSS Modules onde fizer sentido.** Aprovado pelo dono "Tailwind + proposta de fontes". Tipografia editorial via `next/font` (self-hosted, sem chamada externa). Fontes: **Fraunces** (display) + **Inter** (corpo). *(Trocadas no redesign de 2026-06-10 — ver entrada "Noir Couture" abaixo.)*
 - **2026-06-06 — i18n sem roteamento por locale.** Provider próprio (React Context + 4 dicionários tipados, `en` como fonte de verdade), detecção via `navigator.language`, persistência em `localStorage`, `<html lang>` dinâmico. Paridade de chaves entre locales garantida por teste.
 - **2026-06-06 — Score band: ausência de dado ≠ baixa qualidade.** Ajuste feito após teste no navegador contra asket.com: fibra boa sozinha (sem GSM/tecelagem/construção) agora resulta em `indeterminate` (+ confiança `partial`), nunca `low`. `low` exige evidência negativa real (GSM leve, poliéster alto). Isso honra o princípio "nunca inventar / ser honesto sobre lacunas".
 - **2026-06-06 — Verificação no navegador (build de produção).** Os 4 estados (input/analyzing/result/error), troca + persistência de idioma, fetch server-side ao vivo e selo de marca auditada foram validados via Playwright em mobile (430px) e desktop (1280px). Obs.: em `next dev` sobre IP da LAN o HMR (Turbopack) não conecta e a hidratação não ocorre — testar interatividade com `pnpm build && pnpm start`. Não afeta produção (Vercel).
@@ -145,6 +145,14 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
   - **Backlog opcional (NÃO integrados, decisão do dono):** Silbon (ES), Community Clothing (UK), Scalpers (ES, marginal). Podem entrar depois como `partial` se o dono quiser cobertura — dados nos handoffs `guides/cruzamentos/...-lote2.md` e `...-lote4.md`.
   - Sepiia (poliéster) e Dudalina Wrinkle Free deliberadamente fora — não premium natural.
   - **KB final: 19 marcas, 39 produtos.** 62 testes, tsc/lint/build verdes. KB só alimenta o selo `brandMatch` (nunca `findings`); nenhum GSM inventado; `null` preservados; parser intacto (decisão (a) — detecção de egyptian/modal no `detectFiberType` fica no roadmap CLAUDE §7). Commits: `40ceee6` (lote 2), `a033b56` (lote 3), `519c2cd` (lote 5), `a3ac8e8` (partials), além de `f04795d` (fontes/decisões Fase 4).
+
+- **2026-06-10 — Redesign de UI/UX "Noir Couture" + voz Don Draper (a pedido do dono).** Revisão completa de identidade, focada em desejo, não em função. Lógica/parser/KB intactos.
+  - **Identidade:** palco preto absoluto, tipografia creme, acento **chartreuse elétrico** (anti-apático). Três vozes tipográficas: **Bodoni Moda** (display couture) + **Inter** (corpo) + **Space Mono** (dados/etiqueta) — substituem Fraunces+Inter. `themeColor` escuro.
+  - **Conceito do resultado:** o veredito deixou de ser um card e virou uma **etiqueta de composição** (creme sobre preto; ilhós, costura tracejada, dados em mono com pontilhado, ícone de ferro para "amassa?", selo AUDITED). Ordem de render do SPEC §4 preservada.
+  - **Voz Don Draper.** Copy reescrito por estado. **EN** = voz original; **PT/DE/ES** = adaptação cultural (NÃO 1:1): idiomatismos nativos + trocadilho "etiqueta vs tecido" ("Mais etiqueta que tecido" / "Mehr Schein als Stoff" / "Más etiqueta que tela"). Rótulos de dado (category/finding) seguem claros/técnicos.
+  - **Sem travessões "—" na UI** (viraram ponto/vírgula/·); removido o kicker "Fabric Report".
+  - **Engajamento:** exemplos clicáveis **por mercado** (`lib/examples.ts`, `EXAMPLES_BY_LOCALE`): EN→US/UK, PT-BR→Brasil, DE→Alemanha, ES→Espanha — todas as URLs vetadas ao vivo. Nova chave i18n `input.tryExamples`.
+  - Validado visualmente (desktop/mobile, 4 idiomas) via Playwright (instalado/removido só para a checagem; não fica no projeto). Acessibilidade preservada (foco chartreuse, aria-live, contraste). 62 testes verdes. Commits: `f679041` → `e35379f` (etiqueta) → `02302ef` → `56ff782` (sem dash + exemplos por mercado) → `378bd8d` (Draper PT/DE/ES).
 
 ## 6. Status do Definition of Done (CLAUDE.md §8)
 

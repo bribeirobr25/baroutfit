@@ -16,11 +16,21 @@ product's credibility. See `CLAUDE.md` and `docs/` for the full spec.
   Handler (server-side proxy, solves CORS).
 - **cheerio** — lightweight HTML extraction (no headless browser; free-tier
   friendly).
-- **Tailwind CSS v4** + `next/font` for editorial typography.
+- **Tailwind CSS v4** + `next/font` — **Bodoni Moda** (couture display) + **Inter**
+  (body) + **Space Mono** (data / labels).
 - **vitest** — parser unit tests with real-page fixtures.
 - **pnpm** — package manager.
 
-Rationale and locked decisions: `docs/DECISIONS.md`.
+## Design & voice
+
+"Noir Couture": absolute-black stage, cream type, an electric chartreuse accent.
+The verdict is presented as a **clothing composition label** (eyelet, stitching,
+monospace spec rows). Copy is written in a **Don Draper voice** — EN in the
+original tone; PT-BR / DE / ES are cultural adaptations, not 1:1 translations.
+Under the input, **example reads are localized per market** (EN → US/UK, PT-BR →
+Brazil, DE → Germany, ES → Spain) — see `lib/examples.ts`.
+
+Rationale and locked decisions: `docs/DECISIONS.md` (redesign logged in §5.4).
 
 ## Development
 

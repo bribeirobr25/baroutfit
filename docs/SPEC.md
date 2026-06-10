@@ -5,7 +5,7 @@
 ## 1. Jornada do usuário
 
 1. A pessoa abre a página. O idioma é detectado pelo browser (EN/PT-BR/DE/ES, fallback EN). Há um seletor de idioma visível.
-2. Vê um campo de URL em destaque, com copy curto explicando o que a ferramenta faz (1 frase) e exemplos de lojas suportadas.
+2. Vê um campo de URL em destaque, com copy curto explicando o que a ferramenta faz (1 frase) e **exemplos clicáveis de marcas, localizados por mercado** (EN→US/UK, PT-BR→Brasil, DE→Alemanha, ES→Espanha — `lib/examples.ts`); clicar num exemplo dispara a análise. *(Apresentação atual: redesign "Noir Couture" — ver DECISIONS §5.4.)*
 3. Cola a URL de um produto (camiseta, camisa, moletom ou hoodie) e aciona "Analisar".
 4. A página entra no estado **analisando**: microanimação + texto rotativo ("Analisando / Comparando / Avaliando o tecido…") + cards de anúncio (placeholder).
 5. Recebe o **resultado**: veredito claro, score, "amassa muito?", achados, faltantes e nível de confiança.
@@ -60,6 +60,8 @@ Regras:
 - `verified: true` = o dado foi lido da página. `verified: false` = inferido/ausente. A UI deve diferenciar visualmente.
 
 ## 4. Como renderizar o resultado
+
+> **Apresentação atual (redesign 2026-06-10):** o resultado é exibido como uma **etiqueta de composição** (creme sobre o palco preto; ilhós, costura tracejada, dados em monospace, ícone de ferro no "amassa?", selo AUDITED). A **ordem abaixo é preservada** — muda só a forma.
 
 Ordem sugerida, escaneável:
 1. **Categoria detectada** (com ícone) + aviso discreto se `categoryConfidence: low`.

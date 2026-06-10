@@ -100,6 +100,8 @@ Estes são padrões de trabalho estabelecidos. Seguir:
 - **Responsivo e mobile-first** (a pessoa vai colar URL no celular dentro da loja).
 - **Acessível:** contraste adequado, navegação por teclado, foco visível, `lang` correto por idioma.
 
+> **Identidade implementada (2026-06-10):** estes requisitos foram concretizados no redesign **"Noir Couture"** — palco preto, tipografia creme, acento chartreuse, fontes Bodoni Moda + Inter + Space Mono, voz **Don Draper** (EN; PT/DE/ES adaptados), e o resultado apresentado como **etiqueta de composição**. Detalhe e racional em `docs/DECISIONS.md §5.4`.
+
 ---
 
 ## 7. Roadmap (orientação, não obrigação)
