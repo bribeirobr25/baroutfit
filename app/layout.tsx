@@ -29,7 +29,7 @@ const mono = Space_Mono({
 });
 
 const DESCRIPTION =
-  "Paste a link to whatever you're tempted by. We read the cloth — fiber, weight, the way it'll wear — and hand you the truth the price tag won't.";
+  "Anyone can dress. Few know what they're wearing. Forget the price, forget the brand — we read the cloth (fiber, weight, how it wears) and tell you the truth the price tag won't.";
 
 export const metadata: Metadata = {
   title: `${APP_NAME} — read the cloth, not the label`,

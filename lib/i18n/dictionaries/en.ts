@@ -8,10 +8,10 @@
 
 export const en = {
   app: {
-    headlineLead: "The label lies.",
-    headlineMain: "The cloth doesn't.",
+    headlineLead: "Anyone can dress.",
+    headlineMain: "Few know what they're wearing.",
     tagline:
-      "Paste a link to whatever you're tempted by. We read the cloth — fiber, weight, the way it'll wear — and hand you the truth the price tag won't. The story is theirs. The thread is yours.",
+      "Forget the price. Forget the brand. The truth is in the cloth — and we read it.",
   },
   input: {
     placeholder: "Paste the link — a tee, a shirt, a sweat, a hoodie",
