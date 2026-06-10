@@ -214,7 +214,7 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
               <span className="font-display font-semibold">
                 {data.brandMatch.name}
               </span>{" "}
-              <span className="text-tag-muted">— {dict.result.brandMatch}</span>
+              <span className="text-tag-muted">· {dict.result.brandMatch}</span>
             </p>
           </div>
         )}

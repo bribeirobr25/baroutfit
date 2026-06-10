@@ -21,9 +21,6 @@ export function Shell() {
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-12 sm:py-20">
-        <p className="mb-6 font-mono text-[0.7rem] uppercase tracking-[0.28em] text-accent">
-          <span className="text-muted">/</span> Fabric Report — No. 001
-        </p>
         <h1 className="roupas-rise font-display text-[clamp(2.9rem,9.5vw,5.75rem)] leading-[0.92] tracking-[-0.02em] text-ink">
           <span className="block font-light italic text-muted">
             {dict.app.headlineLead}
@@ -41,7 +38,7 @@ export function Shell() {
 
       <footer className="flex items-center justify-between border-t border-line pt-5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted">
         <span>
-          {APP_NAME} — {new Date().getFullYear()}
+          {APP_NAME} · {new Date().getFullYear()}
         </span>
         <span className="hidden sm:inline">read the cloth, not the label</span>
       </footer>

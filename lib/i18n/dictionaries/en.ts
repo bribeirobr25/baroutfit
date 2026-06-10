@@ -11,10 +11,10 @@ export const en = {
     headlineLead: "Anyone can dress.",
     headlineMain: "Few know what they're wearing.",
     tagline:
-      "Forget the price. Forget the brand. The truth is in the cloth — and we read it.",
+      "Forget the price. Forget the brand. Read the cloth, not the label.",
   },
   input: {
-    placeholder: "Paste the link — a tee, a shirt, a sweat, a hoodie",
+    placeholder: "Paste the link. A tee, a shirt, a sweat or a hoodie",
     button: "Read it",
     analyzing: "Reading…",
     errorInvalid: "That's not a link we can follow. Check it and try again.",
@@ -30,13 +30,13 @@ export const en = {
   },
   result: {
     detectedCategory: "What it is",
-    categoryLow: "We're reading between the lines on the cut — keep that in mind.",
+    categoryLow: "We're reading between the lines on the cut. Keep that in mind.",
     quality: "Quality",
     wrinkleQuestion: "Will it wrinkle?",
     found: "What the cloth admits",
-    missing: "What it won't say — check the tag",
+    missing: "What it won't say. Check the tag",
     confidenceLabel: "How sure we are",
-    brandMatch: "A house we know — we've read this one against the source ourselves.",
+    brandMatch: "A house we know. We've read this one against the source ourselves.",
     again: "Read another",
     verifiedTag: "straight from the page",
     inferredTag: "to confirm on the tag",
@@ -82,7 +82,7 @@ export const en = {
   },
   error: {
     unreadable:
-      "Some shops keep their secrets behind glass. This one won't let us read the tag. Try another link — or do it the old way, and read the label yourself.",
+      "Some shops keep their secrets behind glass. This one won't let us read the tag. Try another link, or do it the old way and read the label yourself.",
   },
   ads: {
     placeholder: "This space is for sale",

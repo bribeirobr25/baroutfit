@@ -29,19 +29,19 @@ const mono = Space_Mono({
 });
 
 const DESCRIPTION =
-  "Anyone can dress. Few know what they're wearing. Forget the price, forget the brand — we read the cloth (fiber, weight, how it wears) and tell you the truth the price tag won't.";
+  "Anyone can dress. Few know what they're wearing. Forget the price, forget the brand. We read the cloth (fiber, weight, how it wears) and tell you the truth the price tag won't.";
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — read the cloth, not the label`,
+  title: `${APP_NAME} · read the cloth, not the label`,
   description: DESCRIPTION,
   openGraph: {
-    title: `${APP_NAME} — read the cloth, not the label`,
+    title: `${APP_NAME} · read the cloth, not the label`,
     description: DESCRIPTION,
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: `${APP_NAME} — read the cloth, not the label`,
+    title: `${APP_NAME} · read the cloth, not the label`,
     description: DESCRIPTION,
   },
 };

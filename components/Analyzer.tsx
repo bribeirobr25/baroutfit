@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 import type { AnalyzeOk, AnalyzeResult } from "@/lib/types";
-import { EXAMPLES } from "@/lib/examples";
+import { EXAMPLES_BY_LOCALE } from "@/lib/examples";
 import { AnalyzingState } from "./AnalyzingState";
 import { ResultCard } from "./ResultCard";
 
@@ -26,7 +26,8 @@ function isValidHttpUrl(value: string): boolean {
 }
 
 export function Analyzer() {
-  const { dict } = useI18n();
+  const { dict, locale } = useI18n();
+  const examples = EXAMPLES_BY_LOCALE[locale];
   const [url, setUrl] = useState("");
   const [invalid, setInvalid] = useState(false);
   const [state, setState] = useState<UiState>({ status: "input" });
@@ -116,7 +117,7 @@ export function Analyzer() {
             <span className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted">
               {dict.input.tryExamples}
             </span>
-            {EXAMPLES.map((ex) => (
+            {examples.map((ex) => (
               <button
                 key={ex.label}
                 type="button"

@@ -6,7 +6,7 @@ export const es: Dict = {
     headlineLead: "¿este tejido es",
     headlineMain: "realmente bueno?",
     tagline:
-      "Pega el enlace de una prenda. Leemos el tejido y te decimos si es realmente bueno — y si se arruga.",
+      "Pega el enlace de una prenda. Leemos el tejido y te decimos si es realmente bueno. Y si se arruga.",
   },
   input: {
     placeholder: "Pega la URL del producto (camiseta, camisa, sudadera o sudadera con capucha)",
@@ -21,13 +21,13 @@ export const es: Dict = {
   },
   result: {
     detectedCategory: "Categoría detectada",
-    categoryLow: "No estamos del todo seguros de la categoría — tenlo en cuenta.",
+    categoryLow: "No estamos del todo seguros de la categoría. Tenlo en cuenta.",
     quality: "Calidad",
     wrinkleQuestion: "¿Se arruga?",
     found: "Lo que encontramos",
     missing: "No pudimos confirmar (revisa la etiqueta)",
     confidenceLabel: "Confianza",
-    brandMatch: "Marca auditada — tenemos datos de referencia verificados.",
+    brandMatch: "Marca auditada. Tenemos datos de referencia verificados.",
     again: "Analizar otra prenda",
     verifiedTag: "leído de la página",
     inferredTag: "a revisar en la etiqueta",
