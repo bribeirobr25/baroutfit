@@ -7,10 +7,13 @@ import { APP_NAME } from "@/lib/brand";
 // Three voices: Bodoni Moda (couture display), Inter (clean body), Space Mono
 // (the technical underside — care labels, composition, the verdict's data).
 // Self-hosted by next/font at build time (no external runtime request).
+// Only the weights actually used (400 body/italic + light fallback, 600 wordmark,
+// 700 score, 900 headlines/verdict) — trims the unused 500/800 from the payload.
+// Bodoni Moda has no 300, so `font-light` resolves to the nearest loaded (400).
 const display = Bodoni_Moda({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "600", "700", "900"],
   style: ["normal", "italic"],
   display: "swap",
 });
