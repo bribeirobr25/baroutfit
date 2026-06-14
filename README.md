@@ -57,7 +57,8 @@ docs/                 spec, parser rules, knowledge base, i18n, decisions
 
 ## Deploy
 
-Deployed on **Vercel free tier**. Push to the connected repo or run `vercel`.
+Live on **Vercel free tier** at **https://baroutfit.vercel.app**. The GitHub repo
+is connected, so every push to `main` auto-deploys to production (or run `vercel`).
 The analysis endpoint runs as a Node.js serverless function (needs cheerio + full
 fetch control, so not Edge runtime).
 

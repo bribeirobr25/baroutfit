@@ -1,4 +1,4 @@
-# PENDING / Backlog — roupas (fabric-check)
+# PENDING / Backlog — BAR Outfit (fabric-check)
 
 > Registro de pendências, observações e itens a verificar, levantados em revisões do projeto.
 > Convenção: 🔴 bloqueante · 🟠 relevante · 🟡 menor / polish · 🔵 verificação a fazer.

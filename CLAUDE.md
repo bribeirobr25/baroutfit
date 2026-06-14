@@ -122,7 +122,7 @@ Estes são padrões de trabalho estabelecidos. Seguir:
 
 ## 8. Definition of done da v1
 
-> Status em 2026-06-07: **completo e em produção** (https://roupas-khaki.vercel.app). Detalhe e rastreabilidade em `docs/DECISIONS.md §6`.
+> Status: **completo e em produção** — agora como **BAR Outfit** em https://baroutfit.vercel.app (rebrand/deploy 2026-06-14, com auto-deploy por push no `main`; o antigo https://roupas-khaki.vercel.app segue existindo). Detalhe e rastreabilidade em `docs/DECISIONS.md §5.4` e `§6`.
 
 - [x] Stack escolhida e justificada em `docs/DECISIONS.md`.
 - [x] `/api/analyze` lê uma página real e devolve JSON estruturado.

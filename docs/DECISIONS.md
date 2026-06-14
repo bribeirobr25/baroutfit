@@ -177,5 +177,5 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
 - [x] i18n com detecção por browser + seletor; nenhuma string hard-coded.
 - [x] Estados de UI: input, analyzing (animação + cards placeholder), result, error.
 - [x] Responsivo e acessível (aria-live, foco visível, contraste, `lang` correto).
-- [x] **Deploy no Vercel free** — produção em https://roupas-khaki.vercel.app (conta `bribeirobr`). Função serverless validada ao vivo contra asket.com (categoria, parser, selo de marca auditada, confiança parcial honesta).
+- [x] **Deploy no Vercel free** — produção (BAR Outfit) em https://baroutfit.vercel.app, com **auto-deploy por push no branch `main`** (integração GitHub confirmada 2026-06-14: source `git`, build ~20s, alias promovido). O deploy original `roupas-khaki.vercel.app` (conta `bribeirobr`) segue existindo. Função serverless validada ao vivo contra asket.com (categoria, parser, selo de marca auditada, confiança parcial honesta).
 - [x] README com instruções de dev e deploy.
