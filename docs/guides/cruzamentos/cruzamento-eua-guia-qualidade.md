@@ -37,7 +37,7 @@ DTC americana de "modern American classics". Tem fábrica própria em Mohnton, P
 - **GSM:** **200 g/m²** (mid) e **145 g/m²** (slub) — *publicados.*
 - **Leitura pelo guia:** o **Midweight 200 g/m²** cai na faixa **premium** do guia (180–220) e é **Made in USA** → **banda alta, confiança verificada**. O Slub 145g é leve/texturizado. **Amassado: baixo** (malha).
 
-**Resumo Buck Mason:** o exemplo perfeito de tudo o que o guia quer — e a melhor ilustração da sua regra de "olhar vários produtos": a **mesma marca** vai de Supima leve 140g (fibra de elite) a Field-Spec 310g (heavyweight) a Midweight 200g (premium Made in USA). Publica GSM, fibra e origem em todos. Quando o app `roupas` ler Buck Mason, deve retornar "verificado" sem esforço.
+**Resumo Buck Mason:** o exemplo perfeito de tudo o que o guia quer — e a melhor ilustração da sua regra de "olhar vários produtos": a **mesma marca** vai de Supima leve 140g (fibra de elite) a Field-Spec 310g (heavyweight) a Midweight 200g (premium Made in USA). Publica GSM, fibra e origem em todos. Quando o app `baroutfit` ler Buck Mason, deve retornar "verificado" sem esforço.
 
 ---
 
@@ -120,7 +120,7 @@ Analisadas: **Buck Mason** (a fundo, 4 pesos), **Reigning Champ**, + **Charles T
 
 ### Próximos passos sugeridos
 - Abrir fichas de **American Giant** (made-in-USA, provável GSM) e **Everlane/Todd Snyder** — candidatos a "verificado".
-- Quando o app `roupas` ler páginas americanas: **Buck Mason é o teste ideal** (GSM + fibra + origem por produto). Deve retornar "verificado" e demonstrar a conversão oz→GSM nas blank tees.
+- Quando o app `baroutfit` ler páginas americanas: **Buck Mason é o teste ideal** (GSM + fibra + origem por produto). Deve retornar "verificado" e demonstrar a conversão oz→GSM nas blank tees.
 - Falta apenas o **Brasil** para fechar os 8 mercados.
 
 ---

@@ -2,7 +2,7 @@
 
 > **Para o Claude Code:** este é o documento mestre do projeto. Leia-o por completo antes de escrever qualquer código, e leia também os documentos referenciados na seção "Documentação do projeto". Eles contêm requisitos, restrições e a base de conhecimento que tornam este projeto possível. Não pule a leitura — várias decisões aqui existem para evitar becos sem saída técnicos (CORS, lojas com anti-bot, dados que não existem publicamente) que custariam tempo se redescobertos.
 
-> **Nome do projeto:** o dono escolheu **BAR Outfit** (2026-06-14). O nome está centralizado em `lib/brand.ts` (`APP_NAME`); a UI (masthead/rodapé), o `<title>`/OpenGraph e a etiqueta de resultado leem dali. (Os nomes internos de classes CSS `roupas-*` e o `name` do `package.json` permanecem — são identificadores internos, não texto de marca.)
+> **Nome do projeto:** o dono escolheu **BAR Outfit** (2026-06-14). O nome está centralizado em `lib/brand.ts` (`APP_NAME`); a UI (masthead/rodapé), o `<title>`/OpenGraph e a etiqueta de resultado leem dali. O repositório GitHub e o `name` do `package.json` também foram renomeados para `baroutfit`. (Restam apenas os nomes internos de classes CSS `roupas-*` — identificadores internos, não texto de marca.)
 
 ---
 

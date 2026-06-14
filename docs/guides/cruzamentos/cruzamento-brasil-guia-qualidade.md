@@ -119,7 +119,7 @@ Analisadas: **Insider, Dudalina, Chico Rei** + contraste massa (Hering/Malwee/Lu
 ### Próximos passos sugeridos
 - Abrir fichas de **Reserva** (linha Pima) e **camisa social Dudalina/Aramis** (contagem de fios, two-ply) — candidatas a subir de parcial.
 - Confirmar **GSM real da Insider** por SKU (hoje só temos os tiers padrão/Heavy).
-- Quando o app `roupas` ler páginas brasileiras: **Insider** (composição explícita), **Dudalina** (Pima) e **Chico Rei** (fio 30.1) são bons testes — e o parser pode aproveitar o vocabulário "fio/gramatura" comum no varejo BR.
+- Quando o app `baroutfit` ler páginas brasileiras: **Insider** (composição explícita), **Dudalina** (Pima) e **Chico Rei** (fio 30.1) são bons testes — e o parser pode aproveitar o vocabulário "fio/gramatura" comum no varejo BR.
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Estimativas de indústria (ex.: fio 30.1 ≈ 160 g/m²) estão explicitamente sinalizadas como estimativa, não como dado de marca; marcas sem ficha ficaram pendentes, não preenchidas por inferência.*

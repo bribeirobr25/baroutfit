@@ -144,7 +144,7 @@ Analisadas a fundo: **Camicissima, Xacus, Finamore, Zanone** + contraste **OVS/T
 ### Próximos passos sugeridos
 - Confirmar a referência **Giza exata** da Camicissima e se a **Active da Xacus** é sintética em toda a linha.
 - Próximo lote italiano: o eixo **sartorial napolitano** (Barba, Borriello, Kiton, Borrelli) + **luxo em malha** (Brunello Cucinelli, Loro Piana Sea Island) — provável teto de qualidade do guia.
-- Quando o app `roupas` ler páginas italianas: **Finamore, Xacus e Zanone** publicam composição e tokens de construção legíveis — ótimos testes reais.
+- Quando o app `baroutfit` ler páginas italianas: **Finamore, Xacus e Zanone** publicam composição e tokens de construção legíveis — ótimos testes reais.
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Pistas de marketing e preço não foram convertidos em qualidade de fibra. Dados de revendedor (vs. site oficial) estão sinalizados para reverificação.*

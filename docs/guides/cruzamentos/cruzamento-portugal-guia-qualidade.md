@@ -38,7 +38,7 @@ Acrónimo de **I**ndependent, **S**uperb, **T**ransparent, **O**rganic. Fundada 
 - **GSM:** **não foi possível obter** por SKU.
 - **Leitura pelo guia:** oxford é tecelagem boa (2ª na hierarquia do guia); algodão orgânico e linho da Normandia são matérias de qualidade. **Atenção ao linho:** o guia lembra que **linho amassa muito** (mesmo premium) — então a camisa de linho da ISTO. seria **amassado: alto**, apesar de boa qualidade. A de oxford orgânico: **amassado: médio.** **Banda: alta provável.** **Confiança: parcial** (sem GSM, mas fibra/tecelagem confirmadas).
 
-**Resumo ISTO.:** a marca mais alinhada ao guia de todos os oito mercados — não pelo anti-amassado (é honesta: linho amassa), mas pela **transparência verificável** de fibra, gramatura e origem. A Supima T-Shirt é o único produto destes lotes que fecha banda **alta com confiança verificada**. É o caso de teste ideal para o app `roupas`, porque publica exatamente o que o parser procura.
+**Resumo ISTO.:** a marca mais alinhada ao guia de todos os oito mercados — não pelo anti-amassado (é honesta: linho amassa), mas pela **transparência verificável** de fibra, gramatura e origem. A Supima T-Shirt é o único produto destes lotes que fecha banda **alta com confiança verificada**. É o caso de teste ideal para o app `baroutfit`, porque publica exatamente o que o parser procura.
 
 ---
 
@@ -114,7 +114,7 @@ Analisadas: **ISTO.** (a fundo, 3 produtos) e **Sacoor**, **Zara PT** + bloco de
 ### Próximos passos sugeridos
 - Abrir as **fichas individuais da ISTO.** (linha orgânica e camisas) para capturar os GSM que faltaram — provável upgrade de "parcial" para "verificado".
 - Abrir fichas de **Sacoor, Decenio e as DTC made-in-PT** (Rust and May, Fairly Normal) para extrair composição.
-- Quando o app `roupas` ler páginas portuguesas: **ISTO. é o teste perfeito** — publica fibra + GSM + certificação, exatamente o que o parser foi feito para ler. Deve retornar confiança "verificada".
+- Quando o app `baroutfit` ler páginas portuguesas: **ISTO. é o teste perfeito** — publica fibra + GSM + certificação, exatamente o que o parser foi feito para ler. Deve retornar confiança "verificada".
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Páginas de categoria sem ficha técnica estão sinalizadas; marcas sem dados por SKU ficaram pendentes, não preenchidas por inferência.*

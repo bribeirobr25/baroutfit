@@ -122,7 +122,7 @@ Analisadas: **Sunspel, Charles Tyrwhitt, M&S Autograph** + contraste massa. **Pe
 ### Próximos passos sugeridos
 - Abrir fichas de **Community Clothing** (transparente, provável GSM) e **John Smedley** (malha fina) — candidatos a "verificado".
 - O eixo **luxo Jermyn Street** (Turnbull & Asser, Emma Willis, Hilditch & Key) deve ser rico em two-fold/Sea Island — bom lote dedicado, como o "luxo napolitano" italiano.
-- Quando o app `roupas` ler páginas britânicas: **Charles Tyrwhitt** (two-ply, twill, non-iron explícitos) e **Sunspel** (two-fold long-staple) são bons testes de extração de tokens de construção/fibra.
+- Quando o app `baroutfit` ler páginas britânicas: **Charles Tyrwhitt** (two-ply, twill, non-iron explícitos) e **Sunspel** (two-fold long-staple) são bons testes de extração de tokens de construção/fibra.
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Fibra nomeada de fonte secundária está sinalizada para confirmação por SKU; marcas sem ficha ficaram pendentes, não preenchidas por inferência.*

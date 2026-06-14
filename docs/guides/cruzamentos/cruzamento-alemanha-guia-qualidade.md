@@ -11,7 +11,7 @@
 
 Importante para ler este documento sem confusão: **camisa social (Hemd) raramente publica GSM**. A medida de qualidade em camisaria é a contagem de fios / título do fio (ex.: two-ply / zweifädig, popeline, twill) e a fibra, não a gramatura. Portanto, "GSM não foi possível obter" numa camisa social **não é uma falha da marca nem do levantamento** — é a norma da categoria. O guia avalia camisa por fibra > tecelagem > construção, com GSM como critério secundário (e sobretudo para overshirt).
 
-Já em **camiseta (T-Shirt)**, o GSM é esperado e relevante — e aqui há um padrão claro: **as marcas alemãs quase não publicam GSM de camiseta**, usando em vez disso nomes de qualidade (Single-Jersey, Heavy-Single, DELUXE). Isso limita a conclusão de banda do guia para "indeterminado" em vários casos, exatamente como o app `roupas` faria.
+Já em **camiseta (T-Shirt)**, o GSM é esperado e relevante — e aqui há um padrão claro: **as marcas alemãs quase não publicam GSM de camiseta**, usando em vez disso nomes de qualidade (Single-Jersey, Heavy-Single, DELUXE). Isso limita a conclusão de banda do guia para "indeterminado" em vários casos, exatamente como o app `baroutfit` faria.
 
 ---
 
@@ -143,7 +143,7 @@ Incluídas para mostrar o contraste — e o resultado é, em si, informação ú
 - **GSM/fibra/tecelagem:** **não foi possível obter.** (Curiosidade: produtos Lidl/Livergy às vezes pontuam bem em testes da Stiftung Warentest, mas isso é dado de teste de terceiros, não especificação publicada — não entra como dado de ficha.)
 - **Leitura pelo guia:** **indeterminado.** Preço baixo e ausência de specs impedem qualquer conclusão de qualidade sem a etiqueta física.
 
-**Resumo massa:** o resultado honesto é "não dá para avaliar remotamente". Isso **não** significa que sejam ruins — significa que exigem a etiqueta física (exatamente o caso de uso para o qual o app `roupas` direciona o usuário a conferir manualmente).
+**Resumo massa:** o resultado honesto é "não dá para avaliar remotamente". Isso **não** significa que sejam ruins — significa que exigem a etiqueta física (exatamente o caso de uso para o qual o app `baroutfit` direciona o usuário a conferir manualmente).
 
 ---
 
@@ -169,7 +169,7 @@ Incluídas para mostrar o contraste — e o resultado é, em si, informação ú
 
 ### Próximos passos sugeridos
 - **Reverificar fichas atuais** de Eterna (TENCEL e 1863), Seidensticker e a equivalência fabril Marvelis↔Olymp.
-- Quando o app `roupas` puder ler páginas alemãs, **Trigema Bio, Armedangels JAAMES e Olymp Luxor** são bons primeiros testes (publicam composição, ainda que não GSM).
+- Quando o app `baroutfit` puder ler páginas alemãs, **Trigema Bio, Armedangels JAAMES e Olymp Luxor** são bons primeiros testes (publicam composição, ainda que não GSM).
 - Próximo lote: pode ser outro mercado, ou aprofundar a Alemanha com Hugo Boss, Marc O'Polo, Closed, Drykorn (premium que talvez publiquem mais detalhe).
 
 ---

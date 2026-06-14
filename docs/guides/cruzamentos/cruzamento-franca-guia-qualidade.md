@@ -126,7 +126,7 @@ Analisadas: **Maison Cornichon** (a fundo, 3 gramaturas), **Saint James**, **108
 ### Próximos passos sugeridos
 - Abrir fichas de **Hast e Asphalte** (DTC de camisa — provável que publiquem composição detalhada como a Maison Cornichon).
 - **Armor Lux e American Vintage** (publicam GSM em algumas linhas) são bons próximos para fechar verificado.
-- Quando o app `roupas` ler páginas francesas: **Maison Cornichon é o teste perfeito** (publica GSM + fibra + origem), como a ISTO. em Portugal. Deve retornar confiança "verificada".
+- Quando o app `baroutfit` ler páginas francesas: **Maison Cornichon é o teste perfeito** (publica GSM + fibra + origem), como a ISTO. em Portugal. Deve retornar confiança "verificada".
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Páginas de categoria sem ficha técnica sinalizadas; marcas sem dados por SKU ficaram pendentes, não preenchidas por inferência.*

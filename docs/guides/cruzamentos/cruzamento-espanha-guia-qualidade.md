@@ -11,7 +11,7 @@
 
 A Espanha tem três traços que moldam este cruzamento, e que a diferenciam de Alemanha e Itália:
 
-1. **Concentração no Grupo Inditex.** Zara, Massimo Dutti, Pull&Bear, Bershka e Stradivarius são do mesmo grupo. Massimo Dutti é o "degrau de qualidade" do grupo. Isso significa que poucas marcas cobrem a maior parte do volume — e seus sites são **JS-heavy (SPA)**, o que é um obstáculo prático conhecido para leitura automática (o app `roupas` teria dificuldade, como já vimos com a Zara).
+1. **Concentração no Grupo Inditex.** Zara, Massimo Dutti, Pull&Bear, Bershka e Stradivarius são do mesmo grupo. Massimo Dutti é o "degrau de qualidade" do grupo. Isso significa que poucas marcas cobrem a maior parte do volume — e seus sites são **JS-heavy (SPA)**, o que é um obstáculo prático conhecido para leitura automática (o app `baroutfit` teria dificuldade, como já vimos com a Zara).
 2. **Forte eixo tech/sustentável.** A Espanha produziu a **Sepiia** (têxtil técnico anti-amassado) e a **Ecoalf** (reciclados) — marcas cujo discurso central é função/sustentabilidade, não fibra nobre clássica.
 3. **GSM raríssimo**, como nos outros mercados — com a diferença de que, ao contrário da Itália, as fichas espanholas de massa **também** são pobres em tokens de construção. O resultado tende mais ao "indeterminado", como na Alemanha.
 
@@ -74,7 +74,7 @@ Premium acessível, sediada em Barcelona, especializada historicamente em algod�
 - **Composição:** 100% algodão ou blends, conforme SKU. *Genérico.*
 - **GSM / fibra premium / tecelagem:** **não foi possível obter** de forma consistente. Sites JS-heavy dificultam até a leitura da composição.
 - **Leitura pelo guia:** **indeterminado.** Volume e moda rápida; fichas priorizam preço/estilo. Exige etiqueta física. **Confiança: indeterminada.**
-- 🔎 **Nota prática para o projeto:** Zara e o ecossistema Inditex são exatamente o caso difícil do app `roupas` (SPA, conteúdo carregado por JS, possível anti-bot). O cruzamento manual é mais valioso aqui justamente porque o automático falha.
+- 🔎 **Nota prática para o projeto:** Zara e o ecossistema Inditex são exatamente o caso difícil do app `baroutfit` (SPA, conteúdo carregado por JS, possível anti-bot). O cruzamento manual é mais valioso aqui justamente porque o automático falha.
 
 ---
 
@@ -112,7 +112,7 @@ Analisadas: **Sepiia, Massimo Dutti, Ecoalf** + contraste **Zara/Mango/Inditex**
 ### Próximos passos sugeridos
 - **Reverificar a composição atual da Sepiia** por SKU (pode ter linhas não-100%-poliéster hoje).
 - Abrir diretamente as páginas de **Scalpers/Silbon/Pompeii** para extrair ficha (foram o vão deste lote).
-- Quando o app `roupas` evoluir: a Espanha é o melhor mercado para testar o **fallback de leitura** (Inditex JS-heavy) — bom caso de estresse.
+- Quando o app `baroutfit` evoluir: a Espanha é o melhor mercado para testar o **fallback de leitura** (Inditex JS-heavy) — bom caso de estresse.
 
 ---
 *Gerado em 2026-06-07. Todas as lacunas marcadas como "não foi possível obter" são reais — nenhum dado foi assumido. Marcas sem ficha acessível nesta rodada estão listadas como pendentes, não preenchidas por inferência. Preço e posicionamento não foram convertidos em qualidade de fibra.*
