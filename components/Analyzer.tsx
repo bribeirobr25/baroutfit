@@ -153,7 +153,7 @@ export function Analyzer() {
             className="roupas-tag rounded-2xl border border-line bg-paper-raised p-7 sm:p-9"
           >
             <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-accent">
-              No reading
+              {dict.result.noReading}
             </p>
             <p className="mt-3 font-display text-2xl italic text-ink">
               {dict.result.confidence.unreadable}

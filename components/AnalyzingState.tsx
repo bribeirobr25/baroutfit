@@ -17,7 +17,7 @@ export function AnalyzingState() {
   }, [steps.length]);
 
   return (
-    <section aria-live="polite" aria-label={dict.analyzing.aria} className="w-full">
+    <section aria-label={dict.analyzing.aria} className="w-full">
       <div className="relative my-2 flex flex-col items-center gap-6 overflow-hidden rounded-2xl border border-line bg-paper-raised py-16">
         {/* the scanning beam */}
         <span
@@ -26,7 +26,7 @@ export function AnalyzingState() {
           style={{ animation: "roupas-scan 2.1s ease-in-out infinite" }}
         />
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-accent">
-          Reading
+          {dict.analyzing.reading}
         </p>
         <p
           key={i}

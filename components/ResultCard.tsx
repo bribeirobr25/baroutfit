@@ -3,6 +3,7 @@
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dict } from "@/lib/i18n/dictionaries";
 import type { AnalyzeOk, ScoreBand, Wrinkle } from "@/lib/types";
+import { APP_NAME } from "@/lib/brand";
 
 // Verdict colours — read on the cream tag. Explicit strings so Tailwind keeps them.
 const BAND_TEXT: Record<ScoreBand, string> = {
@@ -122,7 +123,9 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
       <div className="rounded-[13px] border border-dashed border-tag-line px-6 pb-7 pt-8 sm:px-9">
         {/* label header */}
         <div className="flex items-center justify-between border-b border-tag-line/70 pb-4 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-tag-muted">
-          <span>{APP_HEADER}</span>
+          <span>
+            {APP_NAME} · {dict.result.reportLabel}
+          </span>
           <span>{dict.category[data.category]}</span>
         </div>
 
@@ -208,7 +211,7 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
         {data.brandMatch?.ref && (
           <div className="mt-8 flex items-start gap-3 border-t border-tag-line/70 pt-6">
             <span className="mt-0.5 rounded-full bg-tag-ink px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-tag">
-              Audited
+              {dict.result.auditedTag}
             </span>
             <p className="text-sm leading-relaxed text-tag-ink">
               <span className="font-display font-semibold">
@@ -230,5 +233,3 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
     </article>
   );
 }
-
-const APP_HEADER = "roupas · fabric report";

@@ -8,6 +8,7 @@ export const ptBR: Dict = {
     headlineLead: "Qualquer um se veste.",
     headlineMain: "Poucos sabem o que vestem.",
     tagline: "Esqueça o preço. Esqueça a marca. Leia o tecido, não a etiqueta.",
+    footerTagline: "leia o tecido, não a etiqueta",
   },
   input: {
     placeholder: "Cole o link. Camiseta, camisa, moletom ou hoodie.",
@@ -23,8 +24,12 @@ export const ptBR: Dict = {
       "Separando o pano da conversa…",
     ],
     aria: "Lendo o tecido",
+    reading: "Lendo",
   },
   result: {
+    reportLabel: "relatório do tecido",
+    auditedTag: "Auditada",
+    noReading: "Sem leitura",
     detectedCategory: "O que é",
     categoryLow: "Estamos lendo nas entrelinhas do corte. Leve isso em conta.",
     quality: "Qualidade",

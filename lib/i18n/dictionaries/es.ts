@@ -8,6 +8,7 @@ export const es: Dict = {
     headlineLead: "Cualquiera se viste.",
     headlineMain: "Pocos saben lo que llevan.",
     tagline: "Olvida el precio. Olvida la marca. Lee la tela, no la etiqueta.",
+    footerTagline: "lee la tela, no la etiqueta",
   },
   input: {
     placeholder: "Pega el enlace. Camiseta, camisa, sudadera o hoodie.",
@@ -23,8 +24,12 @@ export const es: Dict = {
       "Separando el oficio del cuento…",
     ],
     aria: "Leyendo la tela",
+    reading: "Leyendo",
   },
   result: {
+    reportLabel: "informe de la tela",
+    auditedTag: "Auditada",
+    noReading: "Sin lectura",
     detectedCategory: "Qué es",
     categoryLow: "Estamos leyendo entre líneas en el corte. Tenlo en cuenta.",
     quality: "Calidad",

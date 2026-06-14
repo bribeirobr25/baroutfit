@@ -8,6 +8,7 @@ export const de: Dict = {
     headlineLead: "Anziehen kann sich jeder.",
     headlineMain: "Wenige wissen, was sie tragen.",
     tagline: "Vergiss den Preis. Vergiss die Marke. Lies den Stoff, nicht das Etikett.",
+    footerTagline: "lies den Stoff, nicht das Etikett",
   },
   input: {
     placeholder: "Link einfügen. T-Shirt, Hemd, Sweat oder Hoodie.",
@@ -23,8 +24,12 @@ export const de: Dict = {
       "Trennt Können von Kulisse…",
     ],
     aria: "Liest den Stoff",
+    reading: "Liest",
   },
   result: {
+    reportLabel: "Stoff-Report",
+    auditedTag: "Geprüft",
+    noReading: "Keine Lesung",
     detectedCategory: "Was es ist",
     categoryLow: "Beim Schnitt lesen wir zwischen den Zeilen. Behalt das im Hinterkopf.",
     quality: "Qualität",

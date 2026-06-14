@@ -12,6 +12,7 @@ export const en = {
     headlineMain: "Few know what they're wearing.",
     tagline:
       "Forget the price. Forget the brand. Read the cloth, not the label.",
+    footerTagline: "read the cloth, not the label",
   },
   input: {
     placeholder: "Paste the link. A tee, a shirt, a sweat or a hoodie",
@@ -27,8 +28,12 @@ export const en = {
       "Telling craft from costume…",
     ],
     aria: "Reading the cloth",
+    reading: "Reading",
   },
   result: {
+    reportLabel: "fabric report",
+    auditedTag: "Audited",
+    noReading: "No reading",
     detectedCategory: "What it is",
     categoryLow: "We're reading between the lines on the cut. Keep that in mind.",
     quality: "Quality",

@@ -40,7 +40,7 @@ export function Shell() {
         <span>
           {APP_NAME} · {new Date().getFullYear()}
         </span>
-        <span className="hidden sm:inline">read the cloth, not the label</span>
+        <span className="hidden sm:inline">{dict.app.footerTagline}</span>
       </footer>
     </div>
   );
