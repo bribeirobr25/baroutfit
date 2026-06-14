@@ -5,17 +5,17 @@ import type { Dict } from "./en";
 // saber a verdade ("leia o tecido, não a etiqueta").
 export const ptBR: Dict = {
   app: {
-    headlineLead: "Qualquer um se veste.",
-    headlineMain: "Poucos sabem o que vestem.",
-    tagline: "Esqueça o preço. Esqueça a marca. Leia o tecido, não a etiqueta.",
-    footerTagline: "leia o tecido, não a etiqueta",
+    headlineLead: "Você é o que você veste.",
+    headlineMain: "Quase ninguém sabe ler isso.",
+    tagline: "Esqueça a história da marca. A gente pesa o tecido e diz o que ele realmente é.",
+    footerTagline: "saiba o que você veste",
   },
   input: {
-    placeholder: "Cole o link. Camiseta, camisa, moletom ou hoodie.",
+    placeholder: "Cole o link de uma peça e a gente lê pra você",
     button: "Ler",
     analyzing: "Lendo…",
     errorInvalid: "Esse link a gente não consegue seguir. Confira e tente de novo.",
-    tryExamples: "Sem um link à mão? Leia um destes:",
+    tryExamples: "Sem link à mão? Comece por uma destas:",
   },
   analyzing: {
     steps: [

@@ -166,6 +166,8 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
   - **a11y/perf:** removido `aria-live` aninhado (uma única região no Analyzer); pesos do Bodoni Moda reduzidos aos usados (400/600/700/900; o 300 não existe na fonte e o 500/800 não eram usados).
   - **Gate:** **67 testes** (suíte +8 de SSRF), tsc/lint/build verdes. Headers/SSRF/rate-limit/happy-path validados ao vivo (curl) e no browser (Docker MCP, EN+DE, estados input/analyzing/result/error, zero erro de console).
 
+- **2026-06-14 — Nome definido (BAR Outfit) + novo copy (Direção B) + projeto Vercel próprio.** O dono escolheu **BAR Outfit** (`APP_NAME` em `lib/brand.ts`; encerra o placeholder `[NOME_DO_PROJETO]`). Copy da home trocado para a "Direção B" (identidade-primeiro): manchete "You are what you wear. / Most people never read it.", tagline "Skip the brand story. We weigh the fabric and tell you what it really is.", além de placeholder/botão/tryExamples/rodapé — EN como fonte e PT/DE/ES adaptados (não 1:1, sem travessões). Metadata (`<title>`/OG/description) acompanha; masthead perdeu o `lowercase` para respeitar a caixa "BAR Outfit". Sem mudança de parser/KB/lógica. Deploy num **novo projeto Vercel** para servir em `baroutfit.vercel.app` (se o subdomínio estiver livre); o projeto `roupas`/`roupas-khaki` segue existindo.
+
 ## 6. Status do Definition of Done (CLAUDE.md §8)
 
 - [x] Stack escolhida e justificada (§5.1).

@@ -1,4 +1,4 @@
-# roupas (working name — replaces `[NOME_DO_PROJETO]`)
+# BAR Outfit
 
 Public, shareable landing page where anyone pastes a clothing-product URL
 (t-shirt, button shirt, sweatshirt, or hoodie). A serverless function reads the

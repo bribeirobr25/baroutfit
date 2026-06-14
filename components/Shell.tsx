@@ -13,7 +13,7 @@ export function Shell() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-5 py-6 sm:px-8 sm:py-9">
       <header className="flex items-center justify-between">
-        <span className="font-display text-xl font-semibold tracking-tight text-ink lowercase">
+        <span className="font-display text-xl font-semibold tracking-tight text-ink">
           {APP_NAME}
           <span className="text-accent">.</span>
         </span>

@@ -8,18 +8,18 @@
 
 export const en = {
   app: {
-    headlineLead: "Anyone can dress.",
-    headlineMain: "Few know what they're wearing.",
+    headlineLead: "You are what you wear.",
+    headlineMain: "Most people never read it.",
     tagline:
-      "Forget the price. Forget the brand. Read the cloth, not the label.",
-    footerTagline: "read the cloth, not the label",
+      "Skip the brand story. We weigh the fabric and tell you what it really is.",
+    footerTagline: "know what you're wearing",
   },
   input: {
-    placeholder: "Paste the link. A tee, a shirt, a sweat or a hoodie",
+    placeholder: "Drop a product link and we'll read it",
     button: "Read it",
     analyzing: "Reading…",
     errorInvalid: "That's not a link we can follow. Check it and try again.",
-    tryExamples: "No link handy? Read one of these:",
+    tryExamples: "No link handy? Try one of these:",
   },
   analyzing: {
     steps: [

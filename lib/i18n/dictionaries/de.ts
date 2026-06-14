@@ -5,17 +5,17 @@ import type { Dict } from "./en";
 // Stoff". Du-Form, wie es modische Marken tun.
 export const de: Dict = {
   app: {
-    headlineLead: "Anziehen kann sich jeder.",
-    headlineMain: "Wenige wissen, was sie tragen.",
-    tagline: "Vergiss den Preis. Vergiss die Marke. Lies den Stoff, nicht das Etikett.",
-    footerTagline: "lies den Stoff, nicht das Etikett",
+    headlineLead: "Du bist, was du trägst.",
+    headlineMain: "Kaum jemand kann es lesen.",
+    tagline: "Vergiss die Markenstory. Wir wiegen den Stoff und sagen dir, was er wirklich ist.",
+    footerTagline: "wisse, was du trägst",
   },
   input: {
-    placeholder: "Link einfügen. T-Shirt, Hemd, Sweat oder Hoodie.",
+    placeholder: "Produktlink einfügen, wir lesen ihn",
     button: "Lesen",
     analyzing: "Liest…",
     errorInvalid: "Diesem Link können wir nicht folgen. Prüf ihn und versuch's nochmal.",
-    tryExamples: "Kein Link zur Hand? Lies einen davon:",
+    tryExamples: "Kein Link zur Hand? Fang mit einem davon an:",
   },
   analyzing: {
     steps: [

@@ -5,17 +5,17 @@ import type { Dict } from "./en";
 // juego "más etiqueta que tela". Tuteo, como hacen las marcas de moda.
 export const es: Dict = {
   app: {
-    headlineLead: "Cualquiera se viste.",
-    headlineMain: "Pocos saben lo que llevan.",
-    tagline: "Olvida el precio. Olvida la marca. Lee la tela, no la etiqueta.",
-    footerTagline: "lee la tela, no la etiqueta",
+    headlineLead: "Eres lo que vistes.",
+    headlineMain: "Casi nadie sabe leerlo.",
+    tagline: "Olvida el relato de la marca. Pesamos la tela y te decimos lo que es de verdad.",
+    footerTagline: "sabe lo que vistes",
   },
   input: {
-    placeholder: "Pega el enlace. Camiseta, camisa, sudadera o hoodie.",
+    placeholder: "Pega el enlace de una prenda y la leemos",
     button: "Leer",
     analyzing: "Leyendo…",
     errorInvalid: "Ese enlace no podemos seguirlo. Revísalo e inténtalo de nuevo.",
-    tryExamples: "¿Sin un enlace a mano? Lee uno de estos:",
+    tryExamples: "¿Sin enlace a mano? Empieza por una de estas:",
   },
   analyzing: {
     steps: [

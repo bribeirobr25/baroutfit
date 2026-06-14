@@ -1,14 +1,14 @@
-# CLAUDE.md — [NOME_DO_PROJETO]
+# CLAUDE.md — BAR Outfit
 
 > **Para o Claude Code:** este é o documento mestre do projeto. Leia-o por completo antes de escrever qualquer código, e leia também os documentos referenciados na seção "Documentação do projeto". Eles contêm requisitos, restrições e a base de conhecimento que tornam este projeto possível. Não pule a leitura — várias decisões aqui existem para evitar becos sem saída técnicos (CORS, lojas com anti-bot, dados que não existem publicamente) que custariam tempo se redescobertos.
 
-> **Substituir antes de começar:** troque todas as ocorrências de `[NOME_DO_PROJETO]` pelo nome final (o dono do projeto definirá). Faça um find-replace global em todos os arquivos `.md`.
+> **Nome do projeto:** o dono escolheu **BAR Outfit** (2026-06-14). O nome está centralizado em `lib/brand.ts` (`APP_NAME`); a UI (masthead/rodapé), o `<title>`/OpenGraph e a etiqueta de resultado leem dali. (Os nomes internos de classes CSS `roupas-*` e o `name` do `package.json` permanecem — são identificadores internos, não texto de marca.)
 
 ---
 
 ## 1. Visão geral
 
-[NOME_DO_PROJETO] é uma landing page pública e compartilhável onde qualquer pessoa cola a **URL de um produto de vestuário** (camiseta básica, camisa de botão, moletom ou moletom com capuz) de uma loja online. A aplicação lê a página do produto, extrai as informações técnicas do tecido, compara com um **guia de qualidade** pré-definido (e, quando aplicável, com um **relatório de marcas já auditadas**), e mostra um resultado **simples de entender**: a peça é de boa qualidade? Amassa muito? O que falta saber?
+BAR Outfit é uma landing page pública e compartilhável onde qualquer pessoa cola a **URL de um produto de vestuário** (camiseta básica, camisa de botão, moletom ou moletom com capuz) de uma loja online. A aplicação lê a página do produto, extrai as informações técnicas do tecido, compara com um **guia de qualidade** pré-definido (e, quando aplicável, com um **relatório de marcas já auditadas**), e mostra um resultado **simples de entender**: a peça é de boa qualidade? Amassa muito? O que falta saber?
 
 O propósito não é vender roupa nem rankear marcas "cool". É dar à pessoa um veredito honesto sobre qualidade de tecido, do mesmo jeito que um comprador experiente faria ao ler a etiqueta — separando o que é **fato verificável** do que é **marketing**.
 
@@ -113,6 +113,11 @@ Estes são padrões de trabalho estabelecidos. Seguir:
   - **Parser: reconhecer `egyptian` (Giza vs. genérico) e `modal` no `detectFiberType`** (`lib/parser/tokens.ts`) + tratá-las no `wrinkle`. Hoje (Fase 5) os valores existem no enum `FiberType` + `FIBER_QUALITY` + `PREMIUM_FIBERS` e são usados pela KB (selo de marca), mas o parser não os produz a partir do texto de páginas reais — então uma camisa egípcia/modal não-auditada não ganha crédito premium. Mexe no motor de leitura: exige fixtures reais e uma **regra anti-inflação** (distinguir "Giza certificado" de "algodão egípcio genérico" para não inflar veredictos). Trabalho isolado, separado dos commits de schema do Lote 3/5.
   - histórico, comparar 2 peças, ads reais, mais categorias, base de marcas expandida, modo "descobrir/comparar vários produtos".
 
+  > **Ideias a explorar (sem detalhamento — só registradas para o futuro):**
+  > - **Materiais além do algodão:** estender a verificação a jeans/denim, poliéster e outros tecidos (lã, linho, couro, sintéticos), cada um com seus próprios critérios de qualidade no guia/KB.
+  > - **"Look do dia" (outfit of the day):** recomendação de combinação de peças.
+  > - **"Fits me" / provador virtual:** gerar um avatar do usuário via IA e permitir vestir/visualizar o look online.
+
 ---
 
 ## 8. Definition of done da v1
@@ -130,4 +135,4 @@ Estes são padrões de trabalho estabelecidos. Seguir:
 
 > Endurecimento pós-v1 (2026-06-14): guarda anti-SSRF + teto de corpo (anti-OOM) no leitor, rate limit por IP, headers de segurança/CSP, workflow de CI, e i18n sem strings hard-coded. Detalhe em `docs/DECISIONS.md §2` e `§5.4`.
 
-> Pendências não-bloqueantes: nome final (`[NOME_DO_PROJETO]` ainda placeholder — dono optou por decidir depois; centralizado em `lib/brand.ts`); revisão nativa do copy ES.
+> Pendências não-bloqueantes: revisão nativa do copy ES. (Nome final decidido em 2026-06-14: **BAR Outfit**, em `lib/brand.ts`.)
