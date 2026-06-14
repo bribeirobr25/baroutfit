@@ -108,7 +108,8 @@ export type UnreadableReason =
   | "js-heavy"
   | "not-found"
   | "timeout"
-  | "blocked";
+  | "blocked"
+  | "rate-limited";
 
 // Page could not be read (SPEC §3 unreadable response).
 export interface AnalyzeUnreadable {

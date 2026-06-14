@@ -13,6 +13,34 @@ export const runtime = "nodejs";
 // blocked/JS-heavy shops. Working shops still return in 1-3s via the fast path.
 export const maxDuration = 30;
 
+// Lightweight in-memory rate limit (per-IP sliding window). Bounds casual abuse
+// of the outbound-fetch endpoint at zero cost. It is per-instance and
+// best-effort — production-grade limiting should use Vercel Firewall / BotID or
+// a shared store (e.g. Upstash). The map is pruned so it stays bounded (OOM
+// guard).
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 30;
+const rateHits = new Map<string, number[]>();
+
+function clientIp(req: Request): string {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]?.trim() || "unknown";
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (rateHits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  rateHits.set(ip, recent);
+  if (rateHits.size > 5000) {
+    for (const [k, v] of rateHits) {
+      if (v.every((t) => now - t >= RATE_WINDOW_MS)) rateHits.delete(k);
+    }
+  }
+  return recent.length > RATE_MAX;
+}
+
 function isValidUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try {
@@ -24,6 +52,18 @@ function isValidUrl(value: unknown): value is string {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  if (isRateLimited(clientIp(req))) {
+    const result: AnalyzeResult = {
+      status: "unreadable",
+      reason: "rate-limited",
+      messageKey: "error.unreadable",
+    };
+    return NextResponse.json(result, {
+      status: 429,
+      headers: { "Retry-After": "60" },
+    });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
