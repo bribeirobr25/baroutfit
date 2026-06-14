@@ -3,6 +3,8 @@
 // the product's composition/spec text; nav/footer noise is stripped, and a
 // category hint is derived from the URL and JSON-LD.
 
+import { isIP } from "node:net";
+import { lookup } from "node:dns/promises";
 import * as cheerio from "cheerio";
 import type { CategoryResult, UnreadableReason } from "@/lib/types";
 
@@ -239,6 +241,143 @@ export function extractText(html: string, url: string): ExtractResult {
   };
 }
 
+// --- SSRF guard + response-size cap (security hardening) --------------------
+// The endpoint fetches a user-supplied URL server-side, so it must not be usable
+// to reach internal / cloud-metadata addresses or non-web ports. We reject
+// non-http(s), non-80/443 ports, IP literals in private/reserved ranges, and
+// hostnames that DNS-resolve to such ranges. Redirects are re-validated per hop
+// (safeFetch). Residual gap: DNS rebinding between this lookup and the socket
+// connect (TOCTOU) — fully closing it needs a custom dispatcher; out of
+// free-tier scope. This raises the bar substantially without new dependencies.
+const MAX_REDIRECTS = 4;
+const MAX_BODY_BYTES = 4_000_000; // 4 MB cap to bound memory (OOM guard)
+
+function ipv4IsReserved(ip: string): boolean {
+  const o = ip.split(".").map((n) => Number(n));
+  if (o.length !== 4 || o.some((n) => !Number.isInteger(n) || n < 0 || n > 255))
+    return true; // malformed -> treat as unsafe
+  const [a, b, c] = o;
+  if (a === 0 || a === 10 || a === 127) return true; // this-net, private, loopback
+  if (a === 169 && b === 254) return true; // link-local (incl. 169.254.169.254 metadata)
+  if (a === 172 && b >= 16 && b <= 31) return true; // private
+  if (a === 192 && b === 168) return true; // private
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+  if (a === 192 && b === 0 && (c === 0 || c === 2)) return true; // IETF / TEST-NET-1
+  if (a === 198 && (b === 18 || b === 19)) return true; // benchmarking
+  if (a === 198 && b === 51 && c === 100) return true; // TEST-NET-2
+  if (a === 203 && b === 0 && c === 113) return true; // TEST-NET-3
+  if (a >= 224) return true; // multicast + reserved + 255.255.255.255
+  return false;
+}
+
+function ipv6IsReserved(ip: string): boolean {
+  const s = ip.toLowerCase();
+  if (s === "::1" || s === "::") return true; // loopback / unspecified
+  if (/^fe[89ab]/.test(s)) return true; // link-local fe80::/10
+  if (/^f[cd]/.test(s)) return true; // unique local fc00::/7
+  if (s.startsWith("2001:db8")) return true; // documentation
+  const mapped = s.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/); // IPv4-mapped
+  if (mapped) return ipv4IsReserved(mapped[1]);
+  return false;
+}
+
+export function isReservedAddress(ip: string): boolean {
+  const v = isIP(ip);
+  if (v === 4) return ipv4IsReserved(ip);
+  if (v === 6) return ipv6IsReserved(ip);
+  return true; // not a literal IP — the caller must resolve DNS first
+}
+
+export async function assertSafeUrl(raw: string): Promise<boolean> {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+  if (u.port && u.port !== "80" && u.port !== "443") return false;
+
+  const host = u.hostname.replace(/^\[|\]$/g, ""); // strip IPv6 brackets
+
+  // Literal IP: check directly, no DNS.
+  if (isIP(host)) return !isReservedAddress(host);
+
+  // Obvious internal names (incl. bare hostnames with no dot).
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    !host.includes(".")
+  ) {
+    return false;
+  }
+
+  // Resolve and ensure no address is private/reserved. If resolution fails
+  // (NXDOMAIN, offline), there is no internal target to reach, so we allow it
+  // and let the real fetch fail naturally.
+  try {
+    const addrs = await lookup(host, { all: true });
+    if (addrs.some((a) => isReservedAddress(a.address))) return false;
+  } catch {
+    return true;
+  }
+  return true;
+}
+
+// Read a response body with a hard byte cap (OOM guard). Returns null if the
+// body exceeds the cap or cannot be read.
+async function readBodyCapped(res: Response, max: number): Promise<string | null> {
+  const body = res.body;
+  if (!body) {
+    const t = await res.text();
+    return t.length > max ? null : t;
+  }
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let received = 0;
+  let out = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+      if (received > max) {
+        await reader.cancel();
+        return null;
+      }
+      out += decoder.decode(value, { stream: true });
+    }
+  } catch {
+    return null;
+  }
+  out += decoder.decode();
+  return out;
+}
+
+// Fetch with manual redirect handling, re-validating each hop against the SSRF
+// guard. Returns the final response, or null if a hop is unsafe / too many hops.
+async function safeFetch(
+  startUrl: string,
+  headers: Record<string, string>,
+  signal: AbortSignal,
+): Promise<Response | null> {
+  let current = startUrl;
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    if (!(await assertSafeUrl(current))) return null;
+    const res = await fetch(current, { headers, redirect: "manual", signal });
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get("location");
+      if (!loc) return res;
+      current = new URL(loc, current).toString();
+      continue;
+    }
+    return res;
+  }
+  return null; // too many redirects
+}
+
 function reasonForStatus(status: number): UnreadableReason | null {
   if (status === 404 || status === 410) return "not-found";
   if (status === 403 || status === 429 || status === 503) return "anti-bot";
@@ -258,11 +397,8 @@ async function directFetch(url: string): Promise<FetchResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
-      headers: BROWSER_HEADERS,
-      redirect: "follow",
-      signal: controller.signal,
-    });
+    const res = await safeFetch(url, BROWSER_HEADERS, controller.signal);
+    if (!res) return { ok: false, reason: "blocked" }; // unsafe host / too many redirects
 
     const statusReason = reasonForStatus(res.status);
     if (statusReason) return { ok: false, reason: statusReason };
@@ -270,7 +406,8 @@ async function directFetch(url: string): Promise<FetchResult> {
     const contentType = res.headers.get("content-type") ?? "";
     if (!contentType.includes("html")) return { ok: false, reason: "blocked" };
 
-    const html = await res.text();
+    const html = await readBodyCapped(res, MAX_BODY_BYTES);
+    if (html == null) return { ok: false, reason: "blocked" }; // oversize body
     const extract = extractText(html, url);
 
     // A near-empty page with no usable text -> likely JS-heavy SPA.
@@ -325,7 +462,9 @@ async function fetchViaReader(url: string): Promise<ExtractResult | null> {
     });
     if (!res.ok) return null;
 
-    const raw = (await res.text()).replace(/\s+/g, " ").trim();
+    const capped = await readBodyCapped(res, MAX_BODY_BYTES);
+    if (capped == null) return null; // oversize body
+    const raw = capped.replace(/\s+/g, " ").trim();
     if (raw.length < 40) return null;
 
     const text = focusReaderText(raw);
@@ -338,6 +477,10 @@ async function fetchViaReader(url: string): Promise<ExtractResult | null> {
 }
 
 export async function fetchPage(url: string): Promise<FetchResult> {
+  // SSRF guard before any egress: never let a user URL point our requests at
+  // internal hosts (covers both the direct fetch and the reader-proxy path).
+  if (!(await assertSafeUrl(url))) return { ok: false, reason: "blocked" };
+
   const direct = await directFetch(url);
 
   // Fast path: a healthy direct read with real product text.

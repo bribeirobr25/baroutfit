@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { extractText, categoryFromUrl, hasFabricSignal, fetchPage, focusReaderText } from "./index";
+import {
+  extractText,
+  categoryFromUrl,
+  hasFabricSignal,
+  fetchPage,
+  focusReaderText,
+  assertSafeUrl,
+  isReservedAddress,
+} from "./index";
 import { parse } from "@/lib/parser";
 
 describe("categoryFromUrl", () => {
@@ -149,6 +157,51 @@ describe("fetchPage reader fallback", () => {
     const r = await fetchPage("https://www.hollisterco.com/p/blocked");
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe("anti-bot");
+  });
+});
+
+describe("SSRF guard", () => {
+  it("flags private / reserved IP literals", () => {
+    expect(isReservedAddress("127.0.0.1")).toBe(true); // loopback
+    expect(isReservedAddress("169.254.169.254")).toBe(true); // cloud metadata
+    expect(isReservedAddress("10.0.0.5")).toBe(true); // private
+    expect(isReservedAddress("192.168.1.1")).toBe(true); // private
+    expect(isReservedAddress("172.16.0.1")).toBe(true); // private
+    expect(isReservedAddress("::1")).toBe(true); // ipv6 loopback
+    expect(isReservedAddress("fe80::1")).toBe(true); // ipv6 link-local
+    expect(isReservedAddress("fc00::1")).toBe(true); // ipv6 ULA
+  });
+
+  it("allows public IP literals", () => {
+    expect(isReservedAddress("8.8.8.8")).toBe(false);
+    expect(isReservedAddress("2606:4700:4700::1111")).toBe(false);
+  });
+
+  it("rejects non-web schemes, ports and internal hosts (no DNS needed)", async () => {
+    expect(await assertSafeUrl("ftp://example.com")).toBe(false);
+    expect(await assertSafeUrl("not a url")).toBe(false);
+    expect(await assertSafeUrl("http://localhost/")).toBe(false);
+    expect(await assertSafeUrl("http://127.0.0.1/")).toBe(false);
+    expect(await assertSafeUrl("http://169.254.169.254/latest/meta-data")).toBe(
+      false,
+    );
+    expect(await assertSafeUrl("http://[::1]/")).toBe(false);
+    expect(await assertSafeUrl("http://example.com:22/")).toBe(false); // non-80/443 port
+    expect(await assertSafeUrl("http://intranet/")).toBe(false); // bare host, no dot
+  });
+
+  it("allows a public IP literal URL", async () => {
+    expect(await assertSafeUrl("http://8.8.8.8/")).toBe(true);
+  });
+
+  it("fetchPage refuses an unsafe host before any egress", async () => {
+    const spy = vi.fn();
+    vi.stubGlobal("fetch", spy);
+    const r = await fetchPage("http://169.254.169.254/latest/meta-data");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("blocked");
+    expect(spy).not.toHaveBeenCalled(); // never reached the network
+    vi.unstubAllGlobals();
   });
 });
 
