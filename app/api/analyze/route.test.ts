@@ -45,6 +45,15 @@ describe("POST /api/analyze", () => {
       noteKey: "result.brandMatch",
       ref: true,
     });
+    // Fase B: trusted same-category picks, excluding the matched house (Asket).
+    expect(Array.isArray(json.recommendations)).toBe(true);
+    expect(json.recommendations.length).toBeGreaterThan(0);
+    expect(
+      json.recommendations.every(
+        (r: { brand: string; category: string }) =>
+          r.brand !== "Asket" && r.category === "tshirt",
+      ),
+    ).toBe(true);
   });
 
   it("returns unreadable on a 404", async () => {

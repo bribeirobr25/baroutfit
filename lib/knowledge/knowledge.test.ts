@@ -24,9 +24,12 @@ describe("classifyGsm", () => {
 });
 
 describe("FIBER_QUALITY", () => {
-  it("ranks premium fibers above organic above generic", () => {
+  it("ranks premium fibers above organic, which is base like generic (A2)", () => {
+    // A2: organic is a sustainability label, not a fiber-quality grade, so it
+    // sits at the base tier alongside generic — not above it.
     expect(FIBER_QUALITY.Supima).toBeGreaterThan(FIBER_QUALITY.organic);
-    expect(FIBER_QUALITY.organic).toBeGreaterThan(FIBER_QUALITY.generic);
+    expect(FIBER_QUALITY.organic).toBe(FIBER_QUALITY.generic);
+    expect(FIBER_QUALITY["long-staple"]).toBeGreaterThan(FIBER_QUALITY.organic);
     expect(FIBER_QUALITY.TENCEL).toBe(4);
   });
 

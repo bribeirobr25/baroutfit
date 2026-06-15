@@ -34,7 +34,10 @@ describe("parser — PARSER §8 cases", () => {
     );
     expect(r.wrinkle).toBe("high");
     expect(r.confidence).toBe("verified");
-    expect(r.score.band).toBe("high");
+    // A2: organic generic-staple cotton is not a premium fiber, so even a
+    // heavyweight twill overshirt with corozo is "honestly good", not "the real
+    // thing" — the editorial S+ tier rides on the KB seal, not the computed band.
+    expect(r.score.band).toBe("medium");
   });
 
   it("Norse Falster: shirt, 50/50 cotton/TENCEL, poplin, wrinkle low (TENCEL), verified", () => {
@@ -103,7 +106,9 @@ describe("parser — multi-language tokens", () => {
     expect(r.findings.gsm.note).toMatch(/oz/);
     expect(r.findings.spinning.value).toBe("loopwheeled");
     expect(r.wrinkle).toBe("low");
-    expect(r.score.band).toBe("high");
+    // A2: GOTS organic (generic-staple) cotton — loopwheeled + heavyweight earn
+    // "honestly good", not "high" (high requires a premium fiber).
+    expect(r.score.band).toBe("medium");
   });
 });
 
@@ -145,10 +150,12 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.missing).toContain("gsm");
   });
 
-  it("penalizes high polyester and lands low band", () => {
+  it("abstains on a 50/50 cotton/polyester blend (no in-scope majority)", () => {
+    // A1: in-scope sum is 50% < 60%, so we don't fake a grade — out-of-scope,
+    // never the old confident "low" (CLAUDE.md §1).
     const r = parse("T-shirt. 50% cotton 50% polyester.");
     expect(r.findings.polyester.value).toBe(50);
-    expect(r.score.band).toBe("low");
+    expect(r.score.band).toBe("out-of-scope");
   });
 
   it("cotton + 5% elastane woven shirt wrinkles medium", () => {
@@ -182,12 +189,12 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.score.band).toBe("low");
   });
 
-  it("polyester-dominant blend wrinkles low and scores low", () => {
+  it("polyester-dominant blend abstains (out-of-scope), wrinkle still answered", () => {
     const r = parse("1/4 zip work shirt. 65% polyester, 35% cotton.");
     expect(r.findings.polyester.value).toBe(65);
     expect(r.findings.fiber.value).toBe("65% polyester, 35% cotton");
-    expect(r.wrinkle).toBe("low"); // synthetic resists wrinkles
-    expect(r.score.band).toBe("low"); // high synthetic content
+    expect(r.wrinkle).toBe("low"); // wrinkle verdict is universal: synthetic resists
+    expect(r.score.band).toBe("out-of-scope"); // we don't grade synthetics yet
   });
 
   it("returns unknown category with no garment keywords", () => {
@@ -246,5 +253,59 @@ describe("parser — scoring & wrinkle edge cases", () => {
     });
     expect(r.category).toBe("shirt");
     expect(r.categoryConfidence).toBe("low"); // text disagrees -> low
+  });
+});
+
+describe("parser — Fase A abstention (out-of-scope fibers)", () => {
+  it("100% polyester abstains, not low", () => {
+    const r = parse("Performance tee. 100% polyester. Jersey. 160 g/m².");
+    expect(r.score.band).toBe("out-of-scope");
+    expect(r.findings.polyester.value).toBe(100);
+  });
+
+  it("100% silk abstains (silk is now recognized, just not graded)", () => {
+    const r = parse("Silk shirt. 100% silk. Made in Italy.");
+    expect(r.findings.fiber.value).toBe("100% silk");
+    expect(r.score.band).toBe("out-of-scope");
+  });
+
+  it("100% linen abstains (was wrongly 'low' before), wrinkle still high", () => {
+    const r = parse("Linen shirt. 100% linen. 160 g/m².");
+    expect(r.score.band).toBe("out-of-scope");
+    expect(r.wrinkle).toBe("high"); // wrinkle verdict still answered
+  });
+
+  it("non-merino wool and viscose abstain", () => {
+    expect(parse("Wool jumper. 100% wool.").score.band).toBe("out-of-scope");
+    expect(parse("Dress. 100% viscose.").score.band).toBe("out-of-scope");
+  });
+
+  it("KEY: 50/50 cotton/TENCEL stays IN-SCOPE (sum of in-scope ≥ 60%)", () => {
+    // The corrected blend rule: two in-scope fibers sum to 100% -> graded, not
+    // abstained. Regression guard for Norse Falster (audited A+).
+    const r = parse("Shirt. 50% cotton 50% TENCEL. Poplin. 120 g/m².");
+    expect(r.score.band).not.toBe("out-of-scope");
+    expect(r.findings.fiberType.value).toBe("TENCEL");
+  });
+
+  it("60/40 cotton/poly is in-scope; 55/45 is out-of-scope", () => {
+    expect(parse("Tee. 60% cotton 40% polyester. 200 g/m².").score.band).not.toBe(
+      "out-of-scope",
+    );
+    expect(parse("Tee. 55% cotton 45% polyester. 200 g/m².").score.band).toBe(
+      "out-of-scope",
+    );
+  });
+
+  it("merino wool is in-scope (graded, not abstained)", () => {
+    const r = parse("Merino tee. 100% merino wool. 180 g/m².");
+    expect(r.score.band).not.toBe("out-of-scope");
+    expect(r.findings.fiberType.value).toBe("merino");
+  });
+
+  it("no composition read is indeterminate, not out-of-scope", () => {
+    // Abstention requires knowing the fiber; absence of data stays indeterminate.
+    const r = parse("Heavyweight tee. Premium quality. 100% authentic.");
+    expect(r.score.band).not.toBe("out-of-scope");
   });
 });

@@ -4,7 +4,9 @@ Public, shareable landing page where anyone pastes a clothing-product URL
 (t-shirt, button shirt, sweatshirt, or hoodie). A serverless function reads the
 page, extracts the fabric facts, scores them against a quality guide, and returns
 an honest verdict: quality band, "does it wrinkle?", what was found, what's
-missing, and a confidence level.
+missing, and a confidence level. It then suggests audited pieces it trusts in the
+same category, shows the product photo (proxied same-origin), and lets you share
+the verdict as a link that unfurls into a generated card.
 
 **Core principle: the app never invents data.** If GSM is not on the page, the
 result says "not informed" — it does not guess. Honesty about gaps is the
@@ -16,17 +18,21 @@ product's credibility. See `CLAUDE.md` and `docs/` for the full spec.
   Handler (server-side proxy, solves CORS).
 - **cheerio** — lightweight HTML extraction (no headless browser; free-tier
   friendly).
-- **Tailwind CSS v4** + `next/font` — **Bodoni Moda** (couture display) + **Inter**
+- **Tailwind CSS v4** + `next/font` — **Space Grotesk** (display) + **Inter**
   (body) + **Space Mono** (data / labels).
+- **GSAP** (scroll reveals + kinetic headline) and **Three.js** (the WebGL hero
+  field). Both bundled and served same-origin, so the strict CSP is unchanged.
 - **vitest** — parser unit tests with real-page fixtures.
 - **pnpm** — package manager.
 
 ## Design & voice
 
-"Noir Couture": absolute-black stage, cream type, an electric chartreuse accent.
-The verdict is presented as a **clothing composition label** (eyelet, stitching,
-monospace spec rows). Copy is written in a **Don Draper voice** — EN in the
-original tone; PT-BR / DE / ES are cultural adaptations, not 1:1 translations.
+"Atelier" (redesign 2026-06-15): a cinematic near-black studio, bone type, a warm
+**vermilion → amber** signal. The hero breathes with a live WebGL "dye-in-fabric"
+field; sections rise on scroll (GSAP); the verdict reads as a precise dark spec
+dossier. Mobile-first, and all motion yields fully to `prefers-reduced-motion`.
+Copy is written in a **Don Draper voice** — EN in the original tone; PT-BR / DE /
+ES are cultural adaptations, not 1:1 translations.
 Under the input, **example reads are localized per market** (EN → US/UK, PT-BR →
 Brazil, DE → Germany, ES → Spain) — see `lib/examples.ts`.
 
@@ -110,3 +116,10 @@ chosen language (`localStorage`). See `docs/DECISIONS.md §2` / `§5.4`.
 Data that shops never publish (e.g. GSM at Zara/H&M) cannot be invented — the app
 returns `partial` / `indeterminate` and says so. It never guesses. See
 `docs/DECISIONS.md §2` and `CLAUDE.md §7` (roadmap).
+
+The quality engine only grades fibers it has real criteria for — cotton, merino,
+and TENCEL/modal. For anything else (polyester, silk, linen, non-merino wool,
+viscose) it returns `out-of-scope` ("we don't weigh this fibre yet") instead of
+faking a verdict. The "will it wrinkle?" answer is still given. Adding real
+criteria per fiber is Phase E on the roadmap. See `docs/plans/fase-a-abstencao.md`
+and `docs/DECISIONS.md §5.4` (2026-06-15).

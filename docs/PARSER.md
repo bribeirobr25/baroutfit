@@ -87,19 +87,23 @@ Regex para capturar número seguido de unidade, em qualquer dos formatos:
 A pontuação produz `score.value` (0–100) e `score.band`. Use as faixas de GSM e a hierarquia de `KNOWLEDGE-BASE.md`, **por categoria**. Princípio do guia: **fibra > tecido > construção > GSM > marca**.
 
 Esquema sugerido (o Claude Code pode refinar, mas mantenha a ordem de prioridade):
-- **Fibra/tipo de fibra (peso maior):** premium (Supima/Pima/ELS/merino/TENCEL) > orgânico/long-staple > genérico.
+- **Fibra/tipo de fibra (peso maior):** premium (Supima/Pima/ELS/merino/TENCEL) > long-staple > genérico/orgânico.
 - **Tecelagem adequada à categoria:** ex. twill/oxford numa shirt; french terry num moletom.
 - **Construção:** cada sinal premium (corozo, two-ply, loopwheel, twin-needle, sanforizado) soma.
 - **GSM dentro da faixa premium da categoria** (ver KB) soma; abaixo do mínimo, penaliza levemente.
-- **Penalidade por sintético** alto sem motivo (poliéster > limiar do guia).
 
 **Bands:**
 - `high` — fibra boa confirmada + (tecelagem adequada ou GSM premium) + algum sinal de construção.
 - `medium` — algodão comum confirmado, GSM ok, sem sinais premium.
-- `low` — leve demais / muito sintético sem propósito / sinais fracos.
+- `low` — leve demais / sinais fracos COM corroboração (evidência negativa real, nunca ausência de dado).
 - `indeterminate` — **dado insuficiente** (ex.: "100% cotton" e nada mais). NÃO é nota baixa; o veredito deve dizer "faltam dados para concluir".
+- `out-of-scope` — **fibra fora do nosso critério** (ver Fase A abaixo). A peça foi lida, mas a fibra dominante não é algodão/merino/TENCEL. Honestamente abstemo-nos em vez de fingir uma nota.
 
-> **Refinamento implementado (2026-06-07):** o `indeterminate` é decidido por **corroboração**, não só por "100% cotton". Se NÃO houver nenhum entre {GSM, tecelagem, construção, non-iron, fiação premium, poliéster alto}, a band é `indeterminate` — **mesmo com fibra premium** lida (fibra sozinha não basta para julgar; espelha a regra de confiança §7). `low` exige evidência negativa real (poliéster alto, GSM leve com fibra comum, ou score muito baixo COM corroboração), nunca ausência de dado. (Bug corrigido após teste ao vivo: fibra boa sozinha dava `low`; agora dá `indeterminate` + `partial`.)
+> **Refinamento implementado (2026-06-07):** o `indeterminate` é decidido por **corroboração**, não só por "100% cotton". Se NÃO houver nenhum entre {GSM, tecelagem, construção, non-iron, fiação premium}, a band é `indeterminate` — **mesmo com fibra premium** lida (fibra sozinha não basta para julgar; espelha a regra de confiança §7). `low` exige evidência negativa real (GSM leve com fibra comum, ou score muito baixo COM corroboração), nunca ausência de dado. (Bug corrigido após teste ao vivo: fibra boa sozinha dava `low`; agora dá `indeterminate` + `partial`.)
+
+> **Fase A — abstenção honesta e fim da inflação por orgânico (2026-06-15):**
+> - **`out-of-scope` (decidir pela COMPOSIÇÃO):** o motor só pontua o que tem critério real — **algodão (todos os tipos), merino e os celulósicos Lenzing (TENCEL/lyocell, modal)**. Toda outra fibra (poliéster, seda, linho, lã não-merino, viscose, poliamida, cashmere) é **reconhecida mas não graduada**. O escopo decide-se pela composição (que carrega essas fibras com `%`), **nunca** pelo `fiberType` (cego a não-algodão). Regra de blend: a peça é IN_SCOPE se a **soma das fibras in-scope ≥ 60%** (assim um blend de duas in-scope, ex. 50% algodão + 50% TENCEL, soma 100% e é graduado; já 50/50 algodão-poliéster abstém-se). Composição vazia (nenhuma fibra lida) **não** é abstenção → cai em `indeterminate`. Isto corrige o único caso em que o app **mentia com confiança**: poliéster alto antes virava `low`; agora abstém-se. O `wrinkle` continua sendo respondido (universal: poli ≥ 50% → low, linho → high, malha → low). Cada fibra que ganhar critério real no futuro (Fase E) **sai** da abstenção.
+> - **Orgânico não é eixo de qualidade:** `organic` é rótulo de sustentabilidade/agronomia (pode ser fibra curta upland), graduado como base (= `generic`, qualidade 1), e **não** conta como "fibra boa". O comprimento de fibra (long-staple/ELS) e as fibras premium seguem como os drivers reais. Certificações (GOTS/OEKO-TEX/bluesign) são eixo eco/segurança — detecção como findings separados fica para fase futura.
 
 A UI deve sempre mostrar **o que sustentou o score** (findings verificados), nunca só o número.
 

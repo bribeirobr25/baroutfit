@@ -10,6 +10,22 @@ export const de: Dict = {
     tagline: "Vergiss die Markenstory. Wir wiegen den Stoff und sagen dir, was er wirklich ist.",
     footerTagline: "wisse, was du trägst",
   },
+  home: {
+    heroKicker: "Stoff, ehrlich gelesen",
+    scrollCue: "das Prinzip",
+    principleKicker: "Das Prinzip",
+    principleTitle:
+      "Wir wiegen den Stoff, nicht die Geschichte, die er über sich erzählt.",
+    p1Title: "Faser vor Hype",
+    p1Body:
+      "Stapellänge, Bindung, Gewicht, Verarbeitung. Was bestimmt, wie ein Kleidungsstück sich trägt, noch vor jeder Markengeschichte.",
+    p2Title: "Gelesen, nie erfunden",
+    p2Body:
+      "Wir lesen, was die Seite wirklich angibt. Fehlt eine Zahl, erfinden wir sie nicht.",
+    p3Title: "Ehrlich bei Lücken",
+    p3Body:
+      "Schweigt das Etikett, oder liegt die Faser außerhalb unserer Bewertung, sagen wir es, statt ein Urteil vorzutäuschen.",
+  },
   input: {
     placeholder: "Produktlink einfügen, wir lesen ihn",
     button: "Lesen",
@@ -41,11 +57,18 @@ export const de: Dict = {
     again: "Noch eins lesen",
     verifiedTag: "direkt von der Seite",
     inferredTag: "am Etikett prüfen",
+    alsoConsider: "Worauf wir setzen",
+    alsoConsiderNote: "Geprüfte Stücke, denen wir in dieser Kategorie vertrauen.",
+    share: "Urteil teilen",
+    shareCopied: "Link kopiert",
+    outOfScope:
+      "Vorerst beurteilen wir nur Baumwolle, Merino und TENCEL. Dies ist eine andere Faser, also erfinden wir kein Urteil.",
     band: {
       high: "Das Echte",
       medium: "Ehrlich gut",
       low: "Mehr Schein als Stoff",
       indeterminate: "Das Etikett schweigt",
+      "out-of-scope": "Noch nicht unser Stoff",
     },
     wrinkle: {
       low: "Behält Haltung",

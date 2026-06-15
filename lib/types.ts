@@ -42,7 +42,16 @@ export type Spinning =
   | "open-end"
   | "loopwheeled";
 
-export type ScoreBand = "high" | "medium" | "low" | "indeterminate";
+// "out-of-scope": the fabric was read but its dominant fiber is one we have no
+// quality criteria for yet (polyester, silk, linen, non-merino wool, viscose…).
+// Distinct from "indeterminate" (data missing): here we know the fiber and
+// honestly abstain rather than fake a grade (Fase A; CLAUDE.md §1).
+export type ScoreBand =
+  | "high"
+  | "medium"
+  | "low"
+  | "indeterminate"
+  | "out-of-scope";
 export type Wrinkle = "low" | "medium" | "high" | "unknown";
 export type Confidence = "verified" | "partial" | "unreadable";
 
@@ -89,6 +98,20 @@ export interface BrandMatch {
   ref: boolean;
 }
 
+// Fase B — an audited piece we trust in the same category as the analyzed item.
+// Reference data (fact), shown as advice and clearly separated from the verdict.
+// `url` points to the brand domain (the KB has no product-level URL yet).
+export interface Recommendation {
+  brand: string;
+  product: string;
+  category: Category;
+  tier: string;
+  fiber: string | null;
+  gsm: number | null;
+  wrinkle: Wrinkle;
+  url: string;
+}
+
 // Successful analysis (SPEC §3 success response).
 export interface AnalyzeOk {
   status: "ok";
@@ -99,6 +122,12 @@ export interface AnalyzeOk {
   score: Score;
   wrinkle: Wrinkle;
   brandMatch: BrandMatch | null;
+  // Fase B: audited pieces we trust in the same category (may be empty — the KB
+  // only covers tshirt/shirt). Advice, kept visually separate from the verdict.
+  recommendations: Recommendation[];
+  // Fase B: product image URL read from the page (og:image / JSON-LD), shown via
+  // the same-origin /api/image proxy. Absent when the page exposes none.
+  image?: string;
   confidence: Confidence;
   rawNotes?: string; // debug only, not shown to the user
 }

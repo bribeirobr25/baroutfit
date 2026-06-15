@@ -10,6 +10,22 @@ export const ptBR: Dict = {
     tagline: "Esqueça a história da marca. A gente pesa o tecido e diz o que ele realmente é.",
     footerTagline: "saiba o que você veste",
   },
+  home: {
+    heroKicker: "Tecido, lido com honestidade",
+    scrollCue: "o princípio",
+    principleKicker: "O princípio",
+    principleTitle:
+      "Pesamos o tecido, não a história que ele conta sobre si mesmo.",
+    p1Title: "Fibra acima do hype",
+    p1Body:
+      "Comprimento de fibra, tecelagem, gramatura, construção. O que decide como a peça veste, antes de qualquer discurso de marca.",
+    p2Title: "Lido, nunca inventado",
+    p2Body:
+      "Lemos o que a página realmente diz. Se um dado não está lá, não inventamos.",
+    p3Title: "Honestos sobre lacunas",
+    p3Body:
+      "Quando a etiqueta se cala, ou a fibra está fora do que avaliamos, dizemos isso em vez de fingir um veredito.",
+  },
   input: {
     placeholder: "Cole o link de uma peça e a gente lê pra você",
     button: "Ler",
@@ -41,11 +57,18 @@ export const ptBR: Dict = {
     again: "Ler outra",
     verifiedTag: "direto da página",
     inferredTag: "confirmar na etiqueta",
+    alsoConsider: "O que nós escolheríamos",
+    alsoConsiderNote: "Peças auditadas que confiamos nesta categoria.",
+    share: "Compartilhar este veredito",
+    shareCopied: "Link copiado",
+    outOfScope:
+      "Por enquanto só avaliamos algodão, merino e TENCEL. Esta peça é de outra fibra, então não vamos inventar um veredito.",
     band: {
       high: "Coisa de verdade",
       medium: "Honestamente bom",
       low: "Mais etiqueta que tecido",
       indeterminate: "A etiqueta se cala",
+      "out-of-scope": "Ainda não é o nosso tecido",
     },
     wrinkle: {
       low: "Mantém a pose",

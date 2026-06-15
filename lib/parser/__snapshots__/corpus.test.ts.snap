@@ -1,0 +1,1216 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`regression corpus (Fase A frozen baseline) > asket-overshirt (organic two-ply twill, 308gsm) 1`] = `
+{
+  "category": "shirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "corozo buttons",
+      "two-ply",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "organic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 308,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "twill",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 59,
+  },
+  "wrinkle": "high",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > asket-tshirt (organic long-staple, 180gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "twin-needle stitching",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "long-staple",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 180,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "high",
+    "value": 42,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > buckmason-supima (140gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "Supima",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 140,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 45,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > cotton-elastane-tee (95/5, jersey, 200gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": 5,
+      "verified": true,
+    },
+    "fiber": {
+      "value": "95% cotton, 5% elastane",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 200,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "jersey",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 37,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > cotton-tencel-tee (50/50 blend) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "50% cotton, 50% tencel",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "TENCEL",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 200,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 55,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > generic-twill-shirt (140gsm, two-ply, corozo) 1`] = `
+{
+  "category": "shirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "corozo buttons",
+      "two-ply",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 140,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "twill",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 64,
+  },
+  "wrinkle": "high",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > hollister-heavy (generic cotton, 235gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 235,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 30,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > hoodie-frenchterry (80/20 cotton/poly, 400gsm) 1`] = `
+{
+  "category": "hoodie",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "80% cotton, 20% polyester",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 400,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": 20,
+      "verified": true,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "french-terry",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 40,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > insider-modal (92% tencel modal, 8% elastane) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "partial",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": 8,
+      "verified": true,
+    },
+    "fiber": {
+      "value": "92% tencel, 8% elastane",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "TENCEL",
+      "verified": true,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "gsm",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "indeterminate",
+    "value": 40,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > isto-oxford (organic oxford shirt, 175gsm) 1`] = `
+{
+  "category": "shirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "mother-of-pearl buttons",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "organic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 175,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "oxford",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 52,
+  },
+  "wrinkle": "high",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > linen-shirt (100% linen, 160gsm) 1`] = `
+{
+  "category": "shirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% linen",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": null,
+      "verified": false,
+    },
+    "gsm": {
+      "value": 160,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "fiberType",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "high",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > maison-cornichon (organic GOTS, 195gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "organic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 195,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 25,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > merino-tee (100% merino, 180gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% wool",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "merino",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 180,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 55,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > merz-215 (GOTS organic, loopwheeled, 7.2oz) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "loopwheeled",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "organic",
+      "verified": true,
+    },
+    "gsm": {
+      "note": "derived from oz/yd²",
+      "value": 244,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": "loopwheeled",
+      "verified": true,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 43,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > norse-falster (50/50 cotton/TENCEL, poplin) — KEY blend 1`] = `
+{
+  "category": "unknown",
+  "categoryConfidence": "low",
+  "confidence": "verified",
+  "findings": {
+    "construction": [
+      "mother-of-pearl buttons",
+    ],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "50% cotton, 50% tencel",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "TENCEL",
+      "verified": true,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": "poplin",
+      "verified": true,
+    },
+  },
+  "missing": [
+    "gsm",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 53,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > poly-blend-5050 (cotton/poly, no in-scope majority) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "50% cotton, 50% polyester",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 180,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": 50,
+      "verified": true,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > poly-blend-6040 (cotton majority -> in-scope) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "60% cotton, 40% polyester",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 200,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": 40,
+      "verified": true,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 25,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > polyester-100 (performance tee) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% polyester",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": null,
+      "verified": false,
+    },
+    "gsm": {
+      "value": 160,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": 100,
+      "verified": true,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "fiberType",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > sanvt-heavyweight (organic, 235gsm) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "verified",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "organic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": 235,
+      "verified": true,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "medium",
+    "value": 30,
+  },
+  "wrinkle": "low",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > silk-shirt (100% silk) 1`] = `
+{
+  "category": "shirt",
+  "categoryConfidence": "high",
+  "confidence": "partial",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% silk",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": null,
+      "verified": false,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "fiberType",
+    "gsm",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "unknown",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > viscose-dress (100% viscose, unknown category) 1`] = `
+{
+  "category": "unknown",
+  "categoryConfidence": "low",
+  "confidence": "partial",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% viscose",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": null,
+      "verified": false,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "fiberType",
+    "gsm",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "unknown",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > wool-nonmerino (100% wool, unknown category) 1`] = `
+{
+  "category": "unknown",
+  "categoryConfidence": "low",
+  "confidence": "partial",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% wool",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": null,
+      "verified": false,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "fiberType",
+    "gsm",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "out-of-scope",
+    "value": 0,
+  },
+  "wrinkle": "unknown",
+}
+`;
+
+exports[`regression corpus (Fase A frozen baseline) > zara-nogsm (cotton, no gsm -> indeterminate) 1`] = `
+{
+  "category": "tshirt",
+  "categoryConfidence": "high",
+  "confidence": "partial",
+  "findings": {
+    "construction": [],
+    "elastane": {
+      "value": null,
+      "verified": false,
+    },
+    "fiber": {
+      "value": "100% cotton",
+      "verified": true,
+    },
+    "fiberType": {
+      "value": "generic",
+      "verified": true,
+    },
+    "gsm": {
+      "value": null,
+      "verified": false,
+    },
+    "nonIron": {
+      "value": false,
+      "verified": false,
+    },
+    "polyester": {
+      "value": null,
+      "verified": false,
+    },
+    "spinning": {
+      "value": null,
+      "verified": false,
+    },
+    "weave": {
+      "value": null,
+      "verified": false,
+    },
+  },
+  "missing": [
+    "gsm",
+    "weave",
+    "spinning",
+  ],
+  "score": {
+    "band": "indeterminate",
+    "value": 10,
+  },
+  "wrinkle": "low",
+}
+`;

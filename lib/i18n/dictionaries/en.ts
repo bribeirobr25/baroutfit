@@ -14,6 +14,22 @@ export const en = {
       "Skip the brand story. We weigh the fabric and tell you what it really is.",
     footerTagline: "know what you're wearing",
   },
+  home: {
+    heroKicker: "Fabric, read honestly",
+    scrollCue: "the principle",
+    principleKicker: "The principle",
+    principleTitle:
+      "We weigh the cloth, not the story it tells about itself.",
+    p1Title: "Fiber over hype",
+    p1Body:
+      "Staple length, weave, weight, construction. The things that decide how a garment wears, ahead of any brand story.",
+    p2Title: "Read, never invented",
+    p2Body:
+      "We parse what the page actually states. If a number isn't there, we don't conjure it.",
+    p3Title: "Honest about gaps",
+    p3Body:
+      "When the label stays quiet, or the fibre is outside what we grade, we say so instead of faking a verdict.",
+  },
   input: {
     placeholder: "Drop a product link and we'll read it",
     button: "Read it",
@@ -45,11 +61,18 @@ export const en = {
     again: "Read another",
     verifiedTag: "straight from the page",
     inferredTag: "to confirm on the tag",
+    alsoConsider: "What we'd reach for",
+    alsoConsiderNote: "Audited pieces we trust in this category.",
+    share: "Share this verdict",
+    shareCopied: "Link copied",
+    outOfScope:
+      "We only weigh cotton, merino and TENCEL for now. This one's another fibre, so we won't fake a verdict on it.",
     band: {
       high: "The real thing",
       medium: "Honestly good",
       low: "Mostly marketing",
       indeterminate: "The tag stays quiet",
+      "out-of-scope": "Not our trade yet",
     },
     wrinkle: {
       low: "Holds its poise",

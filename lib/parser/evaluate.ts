@@ -22,7 +22,7 @@ import {
   SHIRT_WEAVE_RANK,
   SPINNING_QUALITY,
 } from "@/lib/knowledge/guide";
-import { hasFiber, pctOf } from "./tokens";
+import { fiberScope, hasFiber, pctOf } from "./tokens";
 
 export interface ParserData {
   category: CategoryResult;
@@ -68,6 +68,15 @@ function clamp(n: number): number {
 }
 
 export function scoreFabric(d: ParserData): Score {
+  // Fase A — honest abstention. If the dominant fiber is one we have no quality
+  // criteria for (polyester, silk, linen, non-merino wool, viscose…), we do not
+  // fake a grade: band = "out-of-scope". Decided from the composition, never
+  // from fiberType (which is blind to non-cotton fibers). "unknown" scope means
+  // no composition was read — fall through to the data-driven path below.
+  if (fiberScope(d.composition, d.fiberType) === "out") {
+    return { value: 0, band: "out-of-scope" };
+  }
+
   // Fiber (largest weight). ELS/premium counts as top tier even if reported as
   // "long-staple".
   const fiberQ = d.fiberType
@@ -124,15 +133,12 @@ export function scoreFabric(d: ParserData): Score {
   );
 
   // --- Band derivation (PARSER §5) ---
-  const goodFiber =
-    d.premiumFiber ||
-    d.fiberType === "organic" ||
-    d.fiberType === "long-staple";
+  // A2: "organic" is sustainability/agronomy, not a fiber-quality grade (organic
+  // can be short-staple upland) — it no longer counts as a good fiber. Staple
+  // length (long-staple/ELS) and premium fibers remain the real drivers.
+  const goodFiber = d.premiumFiber || d.fiberType === "long-staple";
   const gsmHigh = gsmQuality != null && gsmQuality >= 3;
   const hasConstruction = d.construction.length > 0 || premiumSpin;
-
-  const highPolyester =
-    d.polyester != null && d.polyester > POLYESTER_WARN_PCT;
 
   // Corroborating evidence beyond the fiber name. Fiber alone — even a good one
   // — is NOT enough to grade overall quality (mirrors the verified-confidence
@@ -143,8 +149,7 @@ export function scoreFabric(d: ParserData): Score {
     d.weave != null ||
     d.construction.length > 0 ||
     d.nonIron ||
-    premiumSpin ||
-    highPolyester;
+    premiumSpin;
 
   let band: Score["band"];
   if (!hasCorroboration) {
@@ -152,7 +157,6 @@ export function scoreFabric(d: ParserData): Score {
   } else if (goodFiber && (appropriate || gsmHigh) && hasConstruction) {
     band = "high";
   } else if (
-    highPolyester ||
     (gsmQuality != null && gsmQuality <= 1 && !goodFiber) ||
     value < 25
   ) {

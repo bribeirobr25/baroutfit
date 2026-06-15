@@ -5,7 +5,7 @@
 import { NextResponse } from "next/server";
 import { fetchPage } from "@/lib/extract";
 import { parse } from "@/lib/parser";
-import { matchBrandByHost } from "@/lib/knowledge";
+import { matchBrandByHost, recommendAlternatives } from "@/lib/knowledge";
 import type { AnalyzeResult, BrandMatch } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -95,15 +95,24 @@ export async function POST(req: Request): Promise<NextResponse> {
   });
 
   let brandMatch: BrandMatch | null = null;
+  let brandName: string | undefined;
   try {
     const host = new URL(url).hostname;
     const brand = matchBrandByHost(host);
     if (brand) {
+      brandName = brand.name;
       brandMatch = { name: brand.name, noteKey: "result.brandMatch", ref: true };
     }
   } catch {
     brandMatch = null;
   }
+
+  // Audited pieces we trust in the same category (excludes the matched house so
+  // we don't recommend Asket while viewing an Asket). Empty for hoodie/pullover
+  // /unknown — the KB only covers tshirt/shirt.
+  const recommendations = recommendAlternatives(parsed.category, {
+    excludeBrand: brandName,
+  });
 
   const result: AnalyzeResult = {
     status: "ok",
@@ -114,6 +123,8 @@ export async function POST(req: Request): Promise<NextResponse> {
     score: parsed.score,
     wrinkle: parsed.wrinkle,
     brandMatch,
+    recommendations,
+    ...(fetched.extract.image ? { image: fetched.extract.image } : {}),
     confidence: parsed.confidence,
     ...(process.env.NODE_ENV !== "production"
       ? { rawNotes: `host=${safeHost(url)} thin=${fetched.extract.thin}` }

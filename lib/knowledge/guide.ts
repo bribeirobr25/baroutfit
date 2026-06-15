@@ -74,7 +74,9 @@ export const FIBER_QUALITY: Record<FiberType, GsmQuality> = {
   egyptian: 4,
   modal: 4,
   "long-staple": 2,
-  organic: 2,
+  // A2: organic is a sustainability/agronomy label, not a fiber-quality grade
+  // (organic cotton can be short-staple upland) — graded as base, like generic.
+  organic: 1,
   generic: 1,
 };
 

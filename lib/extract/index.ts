@@ -12,6 +12,7 @@ export interface ExtractResult {
   text: string;
   categoryHint: CategoryResult;
   thin: boolean; // true when too little product text was found (likely SPA)
+  image?: string; // product image URL (og:image / JSON-LD), if the page exposes one
 }
 
 export type FetchResult =
@@ -84,11 +85,26 @@ function isProductType(type: unknown): boolean {
   );
 }
 
-function collectProductFields(p: Record<string, unknown>, out: string[]): void {
+// image can be a string, an array, or an ImageObject ({ url }).
+function pushImg(out: string[], v: unknown): void {
+  if (typeof v === "string" && v.trim()) out.push(v.trim());
+  else if (Array.isArray(v)) for (const x of v) pushImg(out, x);
+  else if (v && typeof v === "object") {
+    const u = (v as Record<string, unknown>).url;
+    if (typeof u === "string" && u.trim()) out.push(u.trim());
+  }
+}
+
+function collectProductFields(
+  p: Record<string, unknown>,
+  out: string[],
+  images: string[],
+): void {
   pushStr(out, p.name);
   pushStr(out, p.description);
   pushStr(out, p.material);
   pushStr(out, p.category);
+  pushImg(images, p.image);
   // additionalProperty: [{ name, value }] — spec sheet rows.
   const ap = p.additionalProperty;
   if (Array.isArray(ap)) {
@@ -103,32 +119,39 @@ function collectProductFields(p: Record<string, unknown>, out: string[]): void {
 
 // Walk the graph; collect ONLY from Product nodes (do not recurse into a found
 // product's related-product references).
-function collectFromProducts(node: unknown, out: string[], depth = 0): void {
+function collectFromProducts(
+  node: unknown,
+  out: string[],
+  images: string[],
+  depth = 0,
+): void {
   if (depth > 10 || node == null || typeof node !== "object") return;
   if (Array.isArray(node)) {
-    for (const item of node) collectFromProducts(item, out, depth + 1);
+    for (const item of node) collectFromProducts(item, out, images, depth + 1);
     return;
   }
   const obj = node as Record<string, unknown>;
   if (isProductType(obj["@type"])) {
-    collectProductFields(obj, out);
+    collectProductFields(obj, out, images);
     return;
   }
-  for (const val of Object.values(obj)) collectFromProducts(val, out, depth + 1);
+  for (const val of Object.values(obj))
+    collectFromProducts(val, out, images, depth + 1);
 }
 
-function jsonLdText($: cheerio.CheerioAPI): string {
+function jsonLdNodes($: cheerio.CheerioAPI): { text: string; image?: string } {
   const chunks: string[] = [];
+  const images: string[] = [];
   $('script[type="application/ld+json"]').each((_, el) => {
     const raw = $(el).contents().text();
     if (!raw.trim()) return;
     try {
-      collectFromProducts(JSON.parse(raw), chunks);
+      collectFromProducts(JSON.parse(raw), chunks, images);
     } catch {
       // malformed JSON-LD — ignore, never throw on a single shop's quirk
     }
   });
-  return chunks.join(". ");
+  return { text: chunks.join(". "), image: images[0] };
 }
 
 const PRODUCT_SELECTORS = [
@@ -152,9 +175,10 @@ export function extractText(html: string, url: string): ExtractResult {
 
   // Read JSON-LD and meta BEFORE stripping <script> (JSON-LD lives in a script
   // tag). Then remove scripts and the rest of the page chrome.
-  const jsonld = jsonLdText($);
+  const { text: jsonld, image: jsonldImage } = jsonLdNodes($);
   const metaDesc = $('meta[name="description"]').attr("content") ?? "";
   const ogTitle = $('meta[property="og:title"]').attr("content") ?? "";
+  const ogImage = $('meta[property="og:image"]').attr("content") ?? "";
   const title = $("title").first().text();
 
   $("script, style, noscript, svg, iframe, template").remove();
@@ -234,11 +258,32 @@ export function extractText(html: string, url: string): ExtractResult {
   let categoryHint = categoryFromUrl(url);
   if (categoryHint === "unknown") categoryHint = categoryFromUrl(jsonld);
 
+  // Product image: prefer og:image (the page's own social card), then JSON-LD.
+  // Resolved to an absolute http(s) URL; relative paths are resolved vs the page.
+  const image = resolveImage(ogImage, url) ?? resolveImage(jsonldImage, url);
+
   return {
     text,
     categoryHint,
     thin: productLen < THIN_TEXT_THRESHOLD,
+    ...(image ? { image } : {}),
   };
+}
+
+// Resolve an image candidate to an absolute http(s) URL (vs the page URL).
+// Returns undefined for missing/relative-unresolvable/non-web values.
+function resolveImage(
+  candidate: string | undefined,
+  base: string,
+): string | undefined {
+  if (!candidate) return undefined;
+  try {
+    const u = new URL(candidate, base);
+    if (u.protocol === "http:" || u.protocol === "https:") return u.toString();
+  } catch {
+    // ignore unparseable
+  }
+  return undefined;
 }
 
 // --- SSRF guard + response-size cap (security hardening) --------------------
@@ -358,7 +403,9 @@ async function readBodyCapped(res: Response, max: number): Promise<string | null
 
 // Fetch with manual redirect handling, re-validating each hop against the SSRF
 // guard. Returns the final response, or null if a hop is unsafe / too many hops.
-async function safeFetch(
+// Exported so other server-side fetchers (e.g. the /api/image proxy) reuse the
+// same per-hop guard instead of an unguarded redirect: "follow".
+export async function safeFetch(
   startUrl: string,
   headers: Record<string, string>,
   signal: AbortSignal,

@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
     <div
       role="group"
       aria-label={dict.language.label}
-      className="flex items-center gap-0.5 font-mono text-[0.7rem]"
+      className="flex items-center gap-0.5 rounded-full border border-line bg-paper-raised/50 px-1 py-0.5 font-mono text-[0.7rem] backdrop-blur-md"
     >
       {locales.map((l) => {
         const active = l === locale;

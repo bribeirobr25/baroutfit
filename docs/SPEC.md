@@ -40,9 +40,11 @@
     "construction": [ "corozo buttons", "two-ply" ]
   },
   "missing": [ "gsm", "spinning" ],
-  "score": { "value": 72, "band": "high | medium | low | indeterminate" },
+  "score": { "value": 72, "band": "high | medium | low | indeterminate | out-of-scope" },
   "wrinkle": "low | medium | high | unknown",
   "brandMatch": { "name": "Asket", "noteKey": "result.brandMatch", "ref": true },
+  "recommendations": [ { "brand": "Merz b. Schwanen", "product": "215 Loopwheeled T-Shirt", "category": "tshirt", "tier": "S+", "fiber": "100% GOTS organic cotton", "gsm": 244, "wrinkle": "low", "url": "https://merzbschwanen.com" } ],
+  "image": "https://shop.example.com/product.jpg (opcional; servida via /api/image)",
   "confidence": "verified | partial | unreadable",
   "rawNotes": "string opcional para debug (não exibir ao usuário final)"
 }
@@ -67,14 +69,21 @@ Regras:
 
 Ordem sugerida, escaneável:
 1. **Categoria detectada** (com ícone) + aviso discreto se `categoryConfidence: low`.
-2. **Veredito principal** — band do score traduzido (Alta / Média / Baixa / Indeterminada qualidade) com cor.
+2. **Veredito principal** — band do score traduzido (Alta / Média / Baixa / Indeterminada / Fora do nosso critério) com cor.
 3. **"Amassa muito?"** — resposta direta (Pouco / Médio / Muito / Não sei), porque é o objetivo central do dono.
 4. **O que encontramos** — lista dos `findings` com `verified: true`, em linguagem simples.
 5. **O que não foi possível confirmar** — lista de `missing` + findings `verified: false`. Apresentar como "a conferir na etiqueta", não como defeito.
 6. **Marca auditada** (se `brandMatch.ref`) — nota de que há dados de referência verificados para a marca.
 7. **Nível de confiança** — selo: Verificado / Parcial / Não foi possível ler.
 
+> **Fase B (2026-06-15) — de crítico a conselheiro:**
+> - **Foto do produto:** se `image` veio na resposta, é exibida no topo da etiqueta, servida **same-origin** via `GET /api/image?src=` (proxy com guarda anti-SSRF + cap de 8 MB + só content-type de imagem). Mantém a CSP fechada (`img-src 'self'`) e não vaza referrer. Ausente quando a página não expõe `og:image`/JSON-LD image (best-effort, sem inventar).
+> - **Recomendações (`recommendations`):** bloco **visualmente separado do veredito** (painel escuro, não a etiqueta creme) com até 3 peças auditadas da MESMA categoria que confiamos, ordenadas por tier, excluindo a marca do match. Enquadramento honesto ("peças que confiamos nesta categoria"), nunca "melhores que a sua". Vazio para hoodie/pullover/unknown (a KB só cobre tshirt/shirt) → seção não aparece. **Aparece mesmo quando o veredito é `out-of-scope`/`indeterminate`** (a abstenção vira conselho).
+> - **Compartilhar veredito:** botão "Share" copia uma URL `/share?b=&c=&w=&s=&f=&l=` que **codifica o veredito já computado** (não re-busca a loja → sem novo vetor de SSRF/custo). `/share` é SSR com OpenGraph apontando para `GET /api/og?` (imagem 1200×630 do veredito, na identidade Noir, gerada com `next/og`).
+
 Se `score.band` for `indeterminate` (ex.: 100% algodão confirmado mas sem GSM nem tecido), o veredito deve dizer claramente que **falta dado para concluir**, não dar nota baixa por omissão.
+
+Se `score.band` for `out-of-scope` (fibra dominante fora do critério — poliéster, seda, linho, lã não-merino, viscose; ver PARSER §5, Fase A 2026-06-15), o veredito deve dizer honestamente que **ainda não avaliamos essa fibra** (chave i18n `result.outOfScope`), **sem** número de score e **sem** linha de confiança (que pareceria contradizer a abstenção). O `wrinkle` e os `findings` lidos continuam sendo mostrados. Distinto de `indeterminate` (lá falta dado; aqui há dado, mas falta critério).
 
 ## 5. Requisitos não-funcionais
 

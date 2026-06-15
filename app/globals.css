@@ -1,32 +1,28 @@
 @import "tailwindcss";
 
-/* ── Identity: "Noir Couture" ─────────────────────────────────────────────────
-   The screen is a runway: absolute black, cream type, an electric chartreuse
-   signal. The verdict isn't a card — it's the thing every clothes lover actually
-   reads: a composition LABEL. Cream, stitched, monospaced. Bodoni (couture)
-   against mono (the technical underside of a garment). */
+/* ── Identity: "Atelier" ──────────────────────────────────────────────────────
+   A cinematic near-black studio. Bone-white type, a warm vermilion→amber signal
+   (dye in motion). The hero breathes with a live WebGL fabric field; sections
+   rise on scroll (GSAP). The verdict reads like a precise spec sheet, lit by the
+   accent. Mobile-first; motion yields fully to prefers-reduced-motion. */
 
 :root {
-  /* Dark stage (home, input, analyzing, error) */
-  --paper: #0a0a0b; /* absolute black-ish stage */
-  --paper-raised: #141416;
-  --ink: #f3f0e8; /* warm cream type */
-  --muted: #8b877d; /* warm gray */
-  --line: #262629; /* hairlines on black */
-  --accent: #ccff00; /* electric chartreuse — the signal */
-  --accent-ink: #0a0a0b; /* text on the chartreuse */
+  --paper: #08080a; /* the studio */
+  --paper-raised: #101016; /* lifted surfaces / cards */
+  --paper-glass: rgba(18, 18, 24, 0.55); /* frosted panels over the field */
+  --ink: #f4f1ea; /* bone type */
+  --muted: #918c81; /* warm gray */
+  --line: #24242e; /* hairlines */
 
-  /* The label (result) — a cream tag that leaps off the black */
-  --tag: #f4f1e8;
-  --tag-ink: #15140f;
-  --tag-muted: #6c6658;
-  --tag-line: #d8d2c2;
+  --accent: #ff5a36; /* vermilion — the signal */
+  --accent-2: #ffc24b; /* amber — the second note */
+  --accent-ink: #0a0a0c; /* type on the accent */
 
-  /* Verdict semantics (used on the cream tag) */
-  --good: #1f6b45;
-  --warn: #8a5a08;
-  --bad: #b1271a;
-  --indeterminate: #6c6658;
+  /* Verdict semantics — tuned bright for the dark surface */
+  --good: #46d39a;
+  --warn: #ffc24b;
+  --bad: #ff6b5e;
+  --indeterminate: #9b9588;
 }
 
 @theme inline {
@@ -36,11 +32,8 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
-  --color-tag: var(--tag);
-  --color-tag-ink: var(--tag-ink);
-  --color-tag-muted: var(--tag-muted);
-  --color-tag-line: var(--tag-line);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -50,15 +43,30 @@
   --font-mono: var(--font-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 .font-display {
-  letter-spacing: -0.015em;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Accent gradient text (wordmark, signals). */
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent) 0%, var(--accent-2) 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 ::selection {
@@ -66,14 +74,84 @@ body {
   color: var(--accent-ink);
 }
 
-/* Visible keyboard focus everywhere (accessibility, SPEC §5). */
+/* Visible keyboard focus everywhere (accessibility). */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+/* Words/lines rise on load (CSS fallback; GSAP enhances when present). */
+@keyframes atl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.7em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Live shimmer on the analyzing scan. */
+@keyframes atl-scan {
+  0% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+/* Verdict score bar sweep. */
+@keyframes atl-sweep {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Analyzing line cross-fade. */
+@keyframes atl-fade {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  14%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Soft pulsing scroll cue. */
+@keyframes atl-cue {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+
+.atl-tag {
+  animation: atl-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Thin grain/edge for premium panels. */
+.atl-hairline {
+  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
@@ -81,66 +159,4 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-}
-
-/* Rotating analyzing text: cross-fade. */
-@keyframes roupas-fade {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  12%,
-  88% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* The scan line sweeping the cloth while it reads. */
-@keyframes roupas-scan {
-  0% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-/* The label drops in — like a tag flipped over. */
-@keyframes roupas-tag {
-  from {
-    opacity: 0;
-    transform: translateY(18px) rotate(-0.4deg);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(0);
-  }
-}
-
-.roupas-tag {
-  animation: roupas-tag 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes roupas-sweep {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-/* Headline letters rise on load. */
-@keyframes roupas-rise {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.roupas-rise {
-  animation: roupas-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

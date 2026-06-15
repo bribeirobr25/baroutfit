@@ -17,6 +17,7 @@ const FIBER_KEYWORDS: Array<[string, string[]]> = [
   ["elastane", ["elastane", "elasthan", "elastano", "spandex", "lycra"]],
   ["polyester", ["polyester", "poliester"]],
   ["polyamide", ["polyamide", "polyamid", "poliamida", "nylon"]],
+  ["silk", ["silk", "seda", "seide", "soie"]],
   ["linen", ["linen", "linho", "leinen", "lino"]],
   ["cotton", ["cotton", "algodao", "baumwolle", "algodon"]],
   ["wool", ["wool", "wolle", "lana", "la"]], // "la" = PT "lã" (accent-stripped)
@@ -87,6 +88,48 @@ export function pctOf(parts: CompositionPart[], fiber: string): number | null {
 
 export function hasFiber(parts: CompositionPart[], fiber: string): boolean {
   return parts.some((x) => x.fiber === fiber);
+}
+
+// --- Fiber scope (PARSER §5, Fase A abstention) -----------------------------
+// The scorer only has real quality criteria for cotton, merino wool, and the
+// Lenzing cellulosics (TENCEL/lyocell, modal). Every other fiber (polyester,
+// silk, linen, non-merino wool, viscose, polyamide, cashmere…) is recognized
+// but NOT graded — the honest verdict is abstention ("out-of-scope"), never a
+// faked grade. Scope is decided from the COMPOSITION (which carries those fibers
+// with their %), not from `fiberType`, which is blind to non-cotton fibers.
+export const IN_SCOPE_MIN_PCT = 60; // sum of in-scope fibers needed to grade
+
+const IN_SCOPE_FIBERS = new Set(["cotton", "tencel", "modal"]);
+
+function fiberInScope(fiber: string, fiberType: FiberType | null): boolean {
+  if (IN_SCOPE_FIBERS.has(fiber)) return true;
+  // wool only counts when it is merino (the composition part is just "wool"
+  // either way; the merino distinction comes from detectFiberType).
+  return fiber === "wool" && fiberType === "merino";
+}
+
+export type FiberScope = "in" | "out" | "unknown";
+
+// "in"  -> grade normally.
+// "out" -> abstain (out-of-scope band).
+// "unknown" -> no composition was read; not abstention — falls through to the
+//              existing data-driven paths (likely "indeterminate").
+export function fiberScope(
+  parts: CompositionPart[],
+  fiberType: FiberType | null,
+): FiberScope {
+  if (parts.length === 0) return "unknown";
+  const withPct = parts.filter((p) => p.pct != null);
+  if (withPct.length > 0) {
+    // Sum of in-scope percentages — a blend of two in-scope fibers (e.g.
+    // 50% cotton + 50% TENCEL) sums to 100% and stays in scope.
+    const inScopePct = withPct
+      .filter((p) => fiberInScope(p.fiber, fiberType))
+      .reduce((s, p) => s + (p.pct as number), 0);
+    return inScopePct >= IN_SCOPE_MIN_PCT ? "in" : "out";
+  }
+  // No percentages stated: in scope only if every listed fiber is in scope.
+  return parts.every((p) => fiberInScope(p.fiber, fiberType)) ? "in" : "out";
 }
 
 // Build a clean, language-neutral composition string for display from the

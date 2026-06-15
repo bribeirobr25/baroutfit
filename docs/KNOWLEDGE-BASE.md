@@ -10,6 +10,7 @@ Implicações para o parser/score:
 - Uma fibra premium (Supima/Pima/ELS/merino/TENCEL) vale mais que GSM alto.
 - "100% algodão" sozinho **não** prova qualidade — é sinal neutro.
 - Marca é o último critério (ajuda a localizar, não substitui ficha).
+- **O motor só gradua fibras com critério real: algodão, merino e celulósicos Lenzing (TENCEL/lyocell, modal).** Outras fibras (poliéster, seda, linho, lã não-merino, viscose…) são reconhecidas mas **abstidas** (`out-of-scope`), nunca chutadas — ver PARSER §5 (Fase A).
 
 ## 2. Fibras — ranking
 
@@ -78,8 +79,9 @@ Ranking: **Twill** > **Oxford** > **Chambray** > **Poplin**. (TENCEL é fibra, n
 
 ## 6. Sinais de etiqueta
 **Excelente:** Supima, Pima, Long Staple, Merino, TENCEL/Lyocell, Combed, Ring-Spun, Compact, Twill, French Terry, Pre-Shrunk/Sanforized, corozo, mother-of-pearl, two-ply, loopwheeled.
-**Neutro:** "100% cotton" sozinho.
-**Atenção:** poliéster >40%; "premium"/"luxury cotton" sem dado; "Egyptian cotton" sem certificação (Giza 45/87).
+**Neutro:** "100% cotton" sozinho; "organic"/GOTS (sustentabilidade, **não** qualidade de fibra — Fase A).
+**Atenção:** "premium"/"luxury cotton" sem dado; "Egyptian cotton" sem certificação (Giza 45/87).
+**Fora de critério (não é "Atenção", é abstenção):** poliéster/sintético dominante, seda, linho, lã não-merino, viscose. Desde a Fase A (2026-06-15) o motor **não** rebaixa sintético como "baixa qualidade" — abstém-se (`out-of-scope`), porque não temos critério para julgá-lo (poliéster alto pode ser técnico/reciclado legítimo). Antes, poliéster >40% virava `low` com confiança — o único caso em que o app mentia.
 
 ## 7. Marcas auditadas (dados VERIFICADOS contra fonte oficial)
 
