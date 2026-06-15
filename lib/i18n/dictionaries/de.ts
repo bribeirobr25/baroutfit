@@ -81,6 +81,11 @@ export const de: Dict = {
       partial: "Die halbe Geschichte",
       unreadable: "Die Tür blieb zu",
     },
+    ourRating: "Unsere Einschätzung",
+    verifiedAtSource: "An der Quelle geprüft",
+    referencePartial: "Teilreferenz. Prüfe die Angaben am Etikett.",
+    madeIn: "Hergestellt in",
+    tier: { top: "Spitzenklasse", high: "Ausgezeichnet", mid: "Solide" },
   },
   category: {
     tshirt: "T-Shirt",

@@ -42,7 +42,7 @@
   "missing": [ "gsm", "spinning" ],
   "score": { "value": 72, "band": "high | medium | low | indeterminate | out-of-scope" },
   "wrinkle": "low | medium | high | unknown",
-  "brandMatch": { "name": "Asket", "noteKey": "result.brandMatch", "ref": true },
+  "brandMatch": { "name": "Asket", "noteKey": "result.brandMatch", "ref": true, "matchLevel": "product | category | brand", "reference": { "product": "The T-Shirt", "confidence": "verified | partial", "tier": "A+", "fiber": "100% organic long-staple cotton", "gsm": 180, "weave": "jersey", "origin": "Portugal", "wrinkle": "low" } },
   "recommendations": [ { "brand": "Merz b. Schwanen", "product": "215 Loopwheeled T-Shirt", "category": "tshirt", "tier": "S+", "fiber": "100% GOTS organic cotton", "gsm": 244, "wrinkle": "low", "url": "https://merzbschwanen.com" } ],
   "image": "https://shop.example.com/product.jpg (opcional; servida via /api/image)",
   "confidence": "verified | partial | unreadable",
@@ -73,8 +73,10 @@ Ordem sugerida, escaneável:
 3. **"Amassa muito?"** — resposta direta (Pouco / Médio / Muito / Não sei), porque é o objetivo central do dono.
 4. **O que encontramos** — lista dos `findings` com `verified: true`, em linguagem simples.
 5. **O que não foi possível confirmar** — lista de `missing` + findings `verified: false`. Apresentar como "a conferir na etiqueta", não como defeito.
-6. **Marca auditada** (se `brandMatch.ref`) — nota de que há dados de referência verificados para a marca.
+6. **Marca auditada / Referência verificada** (se `brandMatch.ref`) — ver bloco da decisão #4 abaixo.
 7. **Nível de confiança** — selo: Verificado / Parcial / Não foi possível ler.
+
+> **Decisão #4 (2026-06-15) — referência verificada da KB para marcas auditadas.** Quando a URL é casada a um produto auditado (`matchLevel: product|category`), o `brandMatch.reference` traz nossos dados auditados. A UI mostra um bloco logo abaixo do veredito que **distingue três proveniências**: a banda computada (leitura **desta página**, não inflada), os specs **"verificado na fonte"** (FATO: fibra/GSM/tecelagem/origem — só quando `confidence: verified`), e o tier traduzido sob **"nossa avaliação"** (JULGAMENTO editorial, nunca "verificado"). É **nossa auditoria do produto**, separada dos `findings` lidos-da-página — não afirma que a página colada é aquele SKU exato (cautela de `brands.ts`). `partial` mostra rótulo brando, sem carimbar specs. Match por host com produto incerto (`matchLevel: brand`) mantém o selo genérico "Audited" sem tier. Racional/auditoria: `docs/plans/fase-b-decisao-4-kb-verificada.md` + `docs/audit/AUDIT-fase-b-decisao-4-2026-06-15.md`.
 
 > **Fase B (2026-06-15) — de crítico a conselheiro:**
 > - **Foto do produto:** se `image` veio na resposta, é exibida no topo da etiqueta, servida **same-origin** via `GET /api/image?src=` (proxy com guarda anti-SSRF + cap de 8 MB + só content-type de imagem). Mantém a CSP fechada (`img-src 'self'`) e não vaza referrer. Ausente quando a página não expõe `og:image`/JSON-LD image (best-effort, sem inventar).

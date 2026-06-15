@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/lib/i18n/provider";
 import type { Dict } from "@/lib/i18n/dictionaries";
-import type { AnalyzeOk, ScoreBand, Wrinkle } from "@/lib/types";
+import type { AnalyzeOk, BrandMatch, ScoreBand, Wrinkle } from "@/lib/types";
 import { APP_NAME } from "@/lib/brand";
 
 const BAND_TEXT: Record<ScoreBand, string> = {
@@ -70,6 +70,29 @@ function missingLabels(data: AnalyzeOk, dict: Dict): string[] {
     spinning: dict.finding.spinning,
   };
   return data.missing.map((k) => map[k]).filter(Boolean);
+}
+
+// Editorial tier (S+/A+/…) -> plain-language group. The tier is OUR judgment, so
+// it's labelled "our rating", never "verified" (audit Risk 4).
+function tierGroup(tier: string): "top" | "high" | "mid" {
+  if (tier.startsWith("S")) return "top";
+  if (tier.startsWith("A")) return "high";
+  return "mid";
+}
+
+// Factual spec rows from our verified KB reference (audit Risk 4: these are
+// "verified at source", distinct from the tier judgment).
+function referenceRows(
+  ref: NonNullable<BrandMatch["reference"]>,
+  dict: Dict,
+): Item[] {
+  const items: Item[] = [];
+  if (ref.fiber) items.push({ label: dict.finding.fiber, value: ref.fiber });
+  if (ref.gsm != null)
+    items.push({ label: dict.finding.gsm, value: `${ref.gsm} g/m²` });
+  if (ref.weave) items.push({ label: dict.finding.weave, value: String(ref.weave) });
+  if (ref.origin) items.push({ label: dict.result.madeIn, value: ref.origin });
+  return items;
 }
 
 function IronIcon({ className }: { className?: string }) {
@@ -168,6 +191,71 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
           <p className="mt-3 text-sm text-muted">{dict.result.categoryLow}</p>
         )}
 
+        {/* Audited reference (decisão #4), under the verdict. Kept distinct from
+            the page `findings` below: this is OUR audit of the product (a KB
+            reference), not a claim about the exact pasted SKU (brands.ts caveat).
+            Specs = fact ("verified at source", only when fully verified); tier =
+            our judgment ("our rating"). Brand-level matches keep the generic note. */}
+        {data.brandMatch?.reference ? (
+          (() => {
+            const ref = data.brandMatch.reference;
+            const rows = referenceRows(ref, dict);
+            return (
+              <div className="mt-6 rounded-2xl border border-line bg-paper/50 p-5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent-ink">
+                    {dict.result.auditedTag}
+                  </span>
+                  <span className="font-display font-semibold text-ink">
+                    {data.brandMatch.name}
+                  </span>
+                  <span className="text-sm text-muted">· {ref.product}</span>
+                </div>
+
+                {/* our rating — editorial judgment */}
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted">
+                    {dict.result.ourRating}
+                  </span>
+                  <span className="font-display text-lg font-semibold text-ink">
+                    {dict.result.tier[tierGroup(ref.tier)]}
+                  </span>
+                </div>
+
+                {/* specs — fact, only when fully verified */}
+                {ref.confidence === "verified" ? (
+                  rows.length > 0 && (
+                    <div className="mt-3 border-t border-line pt-3">
+                      <p className="mb-2 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-good">
+                        {dict.result.verifiedAtSource}
+                      </p>
+                      <div className="space-y-1.5">
+                        {rows.map((it) => (
+                          <Row key={it.label} label={it.label} value={it.value} />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <p className="mt-3 text-sm text-muted">
+                    {dict.result.referencePartial}
+                  </p>
+                )}
+              </div>
+            );
+          })()
+        ) : data.brandMatch?.ref ? (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-line bg-paper/50 p-4">
+            <span className="mt-0.5 rounded-full bg-accent px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent-ink">
+              {dict.result.auditedTag}
+            </span>
+            <p className="text-sm leading-relaxed text-ink">
+              <span className="font-display font-semibold">{data.brandMatch.name}</span>{" "}
+              <span className="text-muted">· {dict.result.brandMatch}</span>
+            </p>
+          </div>
+        ) : null}
+
         {/* will it wrinkle */}
         <div className="mt-8 flex items-center gap-4 border-t border-line pt-6">
           <IronIcon className={`h-7 w-7 shrink-0 ${WRINKLE_TEXT[data.wrinkle]}`} />
@@ -214,19 +302,6 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {/* audited brand seal */}
-        {data.brandMatch?.ref && (
-          <div className="mt-8 flex items-start gap-3 border-t border-line pt-6">
-            <span className="mt-0.5 rounded-full bg-accent px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-accent-ink">
-              {dict.result.auditedTag}
-            </span>
-            <p className="text-sm leading-relaxed text-ink">
-              <span className="font-display font-semibold">{data.brandMatch.name}</span>{" "}
-              <span className="text-muted">· {dict.result.brandMatch}</span>
-            </p>
           </div>
         )}
 

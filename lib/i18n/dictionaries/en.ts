@@ -85,6 +85,11 @@ export const en = {
       partial: "Half the story",
       unreadable: "The door stayed shut",
     },
+    ourRating: "Our rating",
+    verifiedAtSource: "Verified at source",
+    referencePartial: "Partial reference. Confirm the specs on the label.",
+    madeIn: "Made in",
+    tier: { top: "Top of the line", high: "Excellent", mid: "Solid" },
   },
   category: {
     tshirt: "T-shirt",

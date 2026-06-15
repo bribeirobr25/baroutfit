@@ -96,6 +96,22 @@ export interface BrandMatch {
   // i18n key for the note shown to the user (frontend translates).
   noteKey: "result.brandMatch";
   ref: boolean;
+  // How confidently we tied the pasted URL to an audited entry (decisão #4).
+  matchLevel: "product" | "category" | "brand";
+  // Present only for product/category matches. This is OUR audit of that product
+  // (a KB reference), NOT a claim about the exact pasted SKU — kept separate from
+  // page `findings`. `tier` is editorial JUDGMENT; the spec fields are FACT
+  // verified at source. `confidence` gates how specs are presented.
+  reference?: {
+    product: string;
+    confidence: "verified" | "partial";
+    tier: string;
+    fiber: string | null;
+    gsm: number | null;
+    weave: Weave | null;
+    origin: string | null;
+    wrinkle: Wrinkle;
+  };
 }
 
 // Fase B — an audited piece we trust in the same category as the analyzed item.

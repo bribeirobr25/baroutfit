@@ -81,6 +81,11 @@ export const ptBR: Dict = {
       partial: "Metade da história",
       unreadable: "A porta ficou fechada",
     },
+    ourRating: "Nossa avaliação",
+    verifiedAtSource: "Verificado na fonte",
+    referencePartial: "Referência parcial. Confirme os dados na etiqueta.",
+    madeIn: "Feito em",
+    tier: { top: "Topo de linha", high: "Excelente", mid: "Sólida" },
   },
   category: {
     tshirt: "Camiseta",

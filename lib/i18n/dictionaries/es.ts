@@ -81,6 +81,11 @@ export const es: Dict = {
       partial: "Media historia",
       unreadable: "La puerta siguió cerrada",
     },
+    ourRating: "Nuestra valoración",
+    verifiedAtSource: "Verificado en la fuente",
+    referencePartial: "Referencia parcial. Confirma los datos en la etiqueta.",
+    madeIn: "Hecho en",
+    tier: { top: "De primera", high: "Excelente", mid: "Sólida" },
   },
   category: {
     tshirt: "Camiseta",

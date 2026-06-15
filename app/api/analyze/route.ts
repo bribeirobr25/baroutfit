@@ -5,7 +5,7 @@
 import { NextResponse } from "next/server";
 import { fetchPage } from "@/lib/extract";
 import { parse } from "@/lib/parser";
-import { matchBrandByHost, recommendAlternatives } from "@/lib/knowledge";
+import { matchAuditedProduct, recommendAlternatives } from "@/lib/knowledge";
 import type { AnalyzeResult, BrandMatch } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -98,10 +98,32 @@ export async function POST(req: Request): Promise<NextResponse> {
   let brandName: string | undefined;
   try {
     const host = new URL(url).hostname;
-    const brand = matchBrandByHost(host);
-    if (brand) {
-      brandName = brand.name;
-      brandMatch = { name: brand.name, noteKey: "result.brandMatch", ref: true };
+    const match = matchAuditedProduct({ host, url, category: parsed.category });
+    if (match) {
+      brandName = match.brand.name;
+      const p = match.product;
+      brandMatch = {
+        name: match.brand.name,
+        noteKey: "result.brandMatch",
+        ref: true,
+        matchLevel: match.matchLevel,
+        // Surface our verified reference only when a specific product is tied
+        // (product/category match). `tier` is our judgment; specs are fact.
+        ...(p
+          ? {
+              reference: {
+                product: p.product,
+                confidence: p.confidence,
+                tier: p.tier,
+                fiber: p.fiber,
+                gsm: p.gsm,
+                weave: p.weave,
+                origin: p.origin,
+                wrinkle: p.wrinkle,
+              },
+            }
+          : {}),
+      };
     }
   } catch {
     brandMatch = null;

@@ -40,11 +40,14 @@ describe("POST /api/analyze", () => {
     expect(json.category).toBe("tshirt");
     expect(json.findings.gsm.value).toBe(180);
     expect(json.confidence).toBe("verified");
-    expect(json.brandMatch).toEqual({
-      name: "Asket",
-      noteKey: "result.brandMatch",
-      ref: true,
-    });
+    expect(json.brandMatch.name).toBe("Asket");
+    expect(json.brandMatch.ref).toBe(true);
+    // Decisão #4: Asket has one audited tshirt -> category match surfaces the
+    // verified reference (tier = our judgment, specs = fact).
+    expect(json.brandMatch.matchLevel).toBe("category");
+    expect(json.brandMatch.reference?.product).toBe("The T-Shirt");
+    expect(json.brandMatch.reference?.confidence).toBe("verified");
+    expect(json.brandMatch.reference?.tier).toBe("A+");
     // Fase B: trusted same-category picks, excluding the matched house (Asket).
     expect(Array.isArray(json.recommendations)).toBe(true);
     expect(json.recommendations.length).toBeGreaterThan(0);
