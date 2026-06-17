@@ -4,10 +4,15 @@
 // exact guard that would have caught the 2026-06-16 "images don't show" bug:
 // the fix was green locally but the reader path dropped the image in prod.
 //
+// It also prints the build identity from /api/health (OPS-2): so a check always
+// shows WHICH build it hit, and — when EXPECTED_SHA is set — FAILS on a mismatch
+// (catches "deploy didn't update" / stale runtime; roadmap §6 M1+M5).
+//
 // Usage:
-//   node scripts/smoke.mjs                      # checks production
-//   node scripts/smoke.mjs http://localhost:3000  # checks a local server
+//   node scripts/smoke.mjs                          # checks production
+//   node scripts/smoke.mjs http://localhost:3200    # checks a local server (port 3200)
 //   BASE_URL=https://preview.example node scripts/smoke.mjs
+//   EXPECTED_SHA=<gitsha> node scripts/smoke.mjs     # also assert the live build
 //
 // Not a unit test (those are hermetic, in vitest). This deliberately makes real
 // network calls against a deployed target, so it lives outside the test run.
@@ -54,8 +59,32 @@ async function check({ name, url }) {
   }
 }
 
-console.log(`OPS-1 smoke check → ${BASE}\n`);
+// OPS-2 — print the live build identity; assert it if EXPECTED_SHA is set.
+async function checkVersion() {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE}/api/health`, { signal: ctrl.signal });
+    const data = await res.json().catch(() => ({}));
+    const version = data.version ?? "(none)";
+    console.log(`build: version=${version} ref=${data.ref ?? "-"}`);
+    const expected = process.env.EXPECTED_SHA;
+    if (expected && version !== expected) {
+      console.log(`FAIL  version mismatch — expected ${expected}, got ${version}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.log(`FAIL  /api/health — ${err.name === "AbortError" ? "timeout" : err.message}`);
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+console.log(`smoke check → ${BASE}\n`);
+const versionOk = await checkVersion();
 const results = await Promise.all(CASES.map(check));
-const ok = results.every(Boolean);
+const ok = versionOk && results.every(Boolean);
 console.log(`\n${ok ? "✓ all passed" : "✗ smoke check failed"}`);
 process.exit(ok ? 0 : 1);
