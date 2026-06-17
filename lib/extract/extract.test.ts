@@ -3,6 +3,8 @@ import {
   extractText,
   categoryFromUrl,
   hasFabricSignal,
+  hasFiberSignal,
+  hasGsmSignal,
   fetchPage,
   focusReaderText,
   assertSafeUrl,
@@ -256,6 +258,22 @@ describe("hasFabricSignal", () => {
   });
 });
 
+describe("hasFiberSignal / hasGsmSignal (L-A)", () => {
+  it("fiber signal: % or named fibre, not weight", () => {
+    expect(hasFiberSignal("100% cotton")).toBe(true);
+    expect(hasFiberSignal("organic linen")).toBe(true);
+    expect(hasFiberSignal("220 GSM")).toBe(false);
+    expect(hasFiberSignal("Boxy fit")).toBe(false);
+  });
+  it("gsm signal: requires a number near the unit (not bare prose)", () => {
+    expect(hasGsmSignal("220 GSM")).toBe(true);
+    expect(hasGsmSignal("180 g/m²")).toBe(true);
+    expect(hasGsmSignal("7 oz")).toBe(true);
+    expect(hasGsmSignal("GSM rating")).toBe(false); // bare unit, no number
+    expect(hasGsmSignal("100% cotton")).toBe(false);
+  });
+});
+
 describe("fetchPage reader fallback", () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -395,6 +413,58 @@ describe("fetchPage read-confidence (via) + retry (P2.1)", () => {
     const r = await fetchPage("https://shop.example.com/heavy-tee");
     expect(r.ok).toBe(false);
     expect(directCalls).toBe(1); // no retry on a hard block
+  });
+
+  // L-A: a THIN page whose facts (fiber+gsm) are in <meta>/JSON-LD should be
+  // kept as the direct read — NOT pushed to the ~18s reader for data it has.
+  // <p> is not a product container, so it lands only in the body fallback,
+  // keeping productLen < 200 (thin) while text length stays > 40 (not js-heavy).
+  const THIN_COMPLETE_HTML =
+    `<html><head><title>Tee</title><meta name="description" content="100% cotton. 220 GSM."></head>` +
+    `<body><h1>Tee</h1><p>Crew neck. Short sleeve. Made in Portugal. A wardrobe staple.</p></body></html>`;
+
+  it("keeps a thin-but-complete direct read (fiber+gsm in meta), skipping the reader (L-A)", async () => {
+    let readerCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        if (String(input).startsWith("https://r.jina.ai/")) {
+          readerCalls++;
+          return new Response("100% cotton", { status: 200, headers: { "content-type": "text/plain" } });
+        }
+        return new Response(THIN_COMPLETE_HTML, { status: 200, headers: { "content-type": "text/html" } });
+      }),
+    );
+    const r = await fetchPage("https://shop.example.com/tee");
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.via).toBe("direct");
+    expect(readerCalls).toBe(0); // the win: reader not called
+  });
+
+  it("still falls to the reader for a thin-but-PARTIAL direct read (fiber, no gsm) — preserved", async () => {
+    let readerCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        if (String(input).startsWith("https://r.jina.ai/")) {
+          readerCalls++;
+          // >40 chars so fetchViaReader accepts it (it rejects tiny reads).
+          return new Response(
+            "Boxy check tee. Composition: 100% cotton. 200 GSM. Made in Portugal.",
+            { status: 200, headers: { "content-type": "text/plain" } },
+          );
+        }
+        // thin, fiber only (no GSM) -> not "complete" -> must try the reader
+        return new Response(
+          `<html><head><title>Tee</title><meta name="description" content="100% cotton."></head><body><h1>Tee</h1><p>Crew neck. Short sleeve. Made in Portugal.</p></body></html>`,
+          { status: 200, headers: { "content-type": "text/html" } },
+        );
+      }),
+    );
+    const r = await fetchPage("https://shop.example.com/tee");
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.via).toBe("reader");
+    expect(readerCalls).toBe(1); // not kept as direct
   });
 });
 

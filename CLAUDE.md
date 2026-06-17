@@ -60,6 +60,7 @@ Detalhes de cada etapa: `docs/SPEC.md` (fluxo e estados), `docs/PARSER.md` (extr
 
 Os arquivos abaixo estão em `docs/` (na mesma árvore deste CLAUDE.md). **São de leitura obrigatória** antes de implementar:
 
+- **`docs/STANDARDS.md`** — **Base de engenharia: princípios de arquitetura (A1–A10), padrões de código e guias de fluxo, + o que foi conscientemente diferido (event-driven, DDD tático, API versionada).** Destila CLAUDE §1/§5 + ROADMAP §2/§6/§7 + DECISIONS. Todo plano novo abre citando os princípios em que se apoia. **Ler antes de planejar ou codar.**
 - **`docs/SPEC.md`** — Especificação funcional: jornada do usuário, estados de tela (input → analisando → resultado/erro), formato do resultado, requisitos de UX, acessibilidade.
 - **`docs/PARSER.md`** — Núcleo técnico: todos os tokens a extrair nos 4 idiomas, regras de classificação por categoria, lógica de pontuação, regra de degradação de confiança, e o veredito de "amassa muito?".
 - **`docs/KNOWLEDGE-BASE.md`** — As faixas do guia de qualidade (GSM por peça, hierarquia fibra > tecido > construção > GSM > marca) e a tabela de marcas já auditadas com dados verificados.

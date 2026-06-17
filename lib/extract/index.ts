@@ -664,12 +664,29 @@ function reasonForStatus(status: number): UnreadableReason | null {
   return null;
 }
 
-// Does the text contain any fabric signal worth parsing?
-const FABRIC_SIGNAL_RE =
-  /\d{1,3}\s*%|\bcotton\b|algod|baumwolle|\bpolyester\b|\bwool\b|\blinen\b|\bleinen\b|tencel|lyocell|\bgsm\b|g\s*\/\s*m|oz\b/i;
+// Fabric signal, split into the two facts that anchor `read.complete` (L-A):
+// a FIBER signal (a percentage or a named fibre) and a GSM/weight signal. The
+// GSM regex requires a NUMBER adjacent to the unit so prose like "GSM rating"
+// isn't mistaken for a weight.
+const FIBER_SIGNAL_RE =
+  /\d{1,3}\s*%|\bcotton\b|algod|baumwolle|\bpolyester\b|\bwool\b|\blinen\b|\bleinen\b|tencel|lyocell/i;
+const GSM_SIGNAL_RE =
+  /\d{2,4}\s*(?:gsm|g\s*\/\s*m)|(?:gsm)\s*\d{2,4}|\d{1,2}\s*oz\b/i;
 
+export function hasFiberSignal(text: string): boolean {
+  return FIBER_SIGNAL_RE.test(text);
+}
+
+export function hasGsmSignal(text: string): boolean {
+  return GSM_SIGNAL_RE.test(text);
+}
+
+// Any fabric signal worth parsing — fiber OR gsm. (Kept for the reader-branch
+// gate and external callers; behaviour vs. the old single regex differs only in
+// that a bare "gsm"/"g/m" with no number no longer counts — that was never a
+// real composition.)
 export function hasFabricSignal(text: string): boolean {
-  return FABRIC_SIGNAL_RE.test(text);
+  return hasFiberSignal(text) || hasGsmSignal(text);
 }
 
 // One direct attempt. `retryable` marks a TRANSIENT failure (network blip or
@@ -797,12 +814,21 @@ export async function fetchPage(url: string): Promise<FetchResult> {
 
   const direct = await directFetch(url);
 
-  // Fast path: a healthy direct read with real product text.
-  if (direct.ok && !direct.extract.thin && hasFabricSignal(direct.extract.text)) {
-    return direct;
+  // Fast path: keep the direct read when it's usable (L-A). A non-thin page
+  // needs only any fabric signal (unchanged). A THIN page (little visible
+  // product text) is kept ONLY when it's already complete — fiber AND gsm,
+  // typically from <meta>/JSON-LD — so a short-but-structured PDP doesn't waste
+  // the ~18s reader for facts it already has. Thin-but-partial still falls to
+  // the reader, as before.
+  if (direct.ok) {
+    const t = direct.extract.text;
+    const usable = direct.extract.thin
+      ? hasFiberSignal(t) && hasGsmSignal(t)
+      : hasFabricSignal(t);
+    if (usable) return direct;
   }
 
-  // Fallback: blocked, thin, or no fabric signal -> try the reader proxy.
+  // Fallback: blocked, thin-and-incomplete, or no fabric signal -> reader proxy.
   const reader = await fetchViaReader(url);
   if (reader && hasFabricSignal(reader.text)) {
     // The reader returns text only (no images). We already fetched the direct
