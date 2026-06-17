@@ -180,6 +180,21 @@ describe("extractText — images (A) & embedded JSON (B)", () => {
     expect(r.text).not.toMatch(/99% polyester/i);
   });
 
+  it("gives visible-text provenance to body prose on a thin page (1a polish)", () => {
+    // Composition in a bare <p> (NOT a PRODUCT_SELECTORS container). Pre-polish
+    // it reached the verdict only via the blob → source undefined (Norse in
+    // prod). Now the visible-text candidate (incl. body when thin) carries it.
+    const html = `<html><head><title>Tee</title></head><body><h1>Heavy Tee</h1><p>This heavyweight tee is 100% cotton.</p></body></html>`;
+    const r = extractText(html, "https://shop.com/products/tee");
+    const vis = (r.candidates?.fiber ?? []).find((c) => c.source === "visible-text");
+    expect(vis).toBeTruthy();
+    expect(vis?.raw).toMatch(/100% cotton/i);
+    // End-to-end: parse with the candidates → fiber gets visible-text provenance.
+    const p = parse(r.text, { categoryHint: r.categoryHint, candidates: r.candidates });
+    expect(p.findings.fiber.value).toBe("100% cotton");
+    expect(p.findings.fiber.source).toBe("visible-text");
+  });
+
   it("reads composition from a spec-row shape {name:'Material', value:...} (P2.3)", () => {
     // Common 'no material' cause: the material word is the sibling LABEL, not the
     // key, so the key-only walk misses it. Stays within parsed JSON islands — the

@@ -360,12 +360,12 @@ export function extractText(html: string, url: string): ExtractResult {
     .trim();
 
   // If product-focused text is thin, fall back to the whole body (accepts some
-  // noise so composition/GSM can still be found).
+  // noise so composition/GSM can still be found). `body` is reused below to give
+  // the same text VISIBLE-TEXT provenance (P2.4 1a polish).
   const productLen = text.length;
-  if (productLen < THIN_TEXT_THRESHOLD) {
-    const body = $("body").text().replace(/\s+/g, " ").trim();
-    text = `${text} ${body}`.trim();
-  }
+  const thin = productLen < THIN_TEXT_THRESHOLD;
+  const body = thin ? $("body").text().replace(/\s+/g, " ").trim() : "";
+  if (thin) text = `${text} ${body}`.trim();
 
   // JSON-LD/category hint: URL first (cleanest), then JSON-LD category text.
   let categoryHint = categoryFromUrl(url);
@@ -401,13 +401,18 @@ export function extractText(html: string, url: string): ExtractResult {
   if (jsonld.trim()) fiberCandidates.push({ raw: jsonld, source: "structured", scope: "product" });
   const metaRaw = [ogTitle, metaDesc].filter(Boolean).join(". ").trim();
   if (metaRaw) fiberCandidates.push({ raw: metaRaw, source: "meta", scope: "page" });
-  const visibleRaw = containerParts.join(". ").trim();
+  // Visible-text candidate: product containers, plus the body text WHEN THIN —
+  // mirrors exactly what the blob `text` already uses (above), so this only
+  // ATTRIBUTES provenance to prose the blob was already reading (e.g. a Shopify
+  // body_html in a non-PRODUCT_SELECTORS container, like Norse), with no change
+  // to which composition is found. (1a polish.)
+  const visibleRaw = [containerParts.join(". "), body].filter(Boolean).join(". ").trim();
   if (visibleRaw) fiberCandidates.push({ raw: visibleRaw, source: "visible-text", scope: "page" });
 
   return {
     text,
     categoryHint,
-    thin: productLen < THIN_TEXT_THRESHOLD,
+    thin,
     ...(images.length ? { images } : {}),
     ...(fiberCandidates.length ? { candidates: { fiber: fiberCandidates } } : {}),
   };
