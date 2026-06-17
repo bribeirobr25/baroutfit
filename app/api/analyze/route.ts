@@ -92,6 +92,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const parsed = parse(fetched.extract.text, {
     categoryHint: fetched.extract.categoryHint,
+    candidates: fetched.extract.candidates,
   });
 
   let brandMatch: BrandMatch | null = null;

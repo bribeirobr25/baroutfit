@@ -71,6 +71,22 @@ export interface ReadInfo {
   complete: boolean;
 }
 
+// P2.4 — field-level provenance. WHERE a field's value came from, and whether
+// that source was scoped to the viewed product. `scope` is what closes the
+// neighbour risk at the origin (A3/L-B): a "catalog"-scoped candidate is never
+// promoted to a finding. Coarse `source` granularity (#P2.4-C).
+export type FieldSource = "structured" | "meta" | "visible-text" | "reader";
+export type FieldScope = "product" | "page" | "catalog";
+
+// A provenance-tagged slice of page text for one field. The parser computes the
+// value from `raw` (keeping composition parsing in the domain layer, A6); the
+// extractor only tags where the slice came from.
+export interface FieldCandidate {
+  raw: string;
+  source: FieldSource;
+  scope: FieldScope;
+}
+
 // A single extracted datum. `verified: true` means it was read explicitly from
 // the page; `verified: false` means inferred/absent (PARSER §2, SPEC §3).
 export interface Finding<T> {
@@ -78,6 +94,8 @@ export interface Finding<T> {
   verified: boolean;
   // Optional provenance note for debug/UI hints (never invents data).
   note?: string;
+  // P2.4 — which source produced this value (when consumed from a candidate).
+  source?: FieldSource;
 }
 
 // One declared component of the composition, e.g. { fiber: "cotton", pct: 95 }.

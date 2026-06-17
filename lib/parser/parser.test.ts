@@ -351,3 +351,53 @@ describe("parser — Fase A abstention (out-of-scope fibers)", () => {
     expect(r.score.band).not.toBe("out-of-scope");
   });
 });
+
+describe("parser — P2.4 Fase 1a (fiber provenance via candidates)", () => {
+  it("no candidate -> fiber from the blob, no source (byte-identical to pre-P2.4)", () => {
+    const r = parse("Heavy tee. 100% cotton. 220 GSM.");
+    expect(r.findings.fiber.value).toBe("100% cotton");
+    expect(r.findings.fiber.source).toBeUndefined();
+  });
+
+  it("records the source when a candidate yields the composition", () => {
+    const r = parse("Some tee.", {
+      candidates: { fiber: [{ raw: "Material: 100% cotton", source: "meta", scope: "page" }] },
+    });
+    expect(r.findings.fiber.value).toBe("100% cotton");
+    expect(r.findings.fiber.source).toBe("meta");
+  });
+
+  it("precedence: structured+product beats a meta/page candidate", () => {
+    const r = parse("blob mentions 100% cotton somewhere", {
+      candidates: {
+        fiber: [
+          { raw: "100% cotton", source: "meta", scope: "page" },
+          { raw: "100% linen", source: "structured", scope: "product" },
+        ],
+      },
+    });
+    expect(r.findings.fiber.value).toBe("100% linen"); // structured wins
+    expect(r.findings.fiber.source).toBe("structured");
+  });
+
+  it("discards a catalog-scoped (neighbour) candidate — A3/#P2.4-B", () => {
+    const r = parse("Cotton tee.", {
+      candidates: {
+        fiber: [
+          { raw: "99% polyester", source: "structured", scope: "catalog" }, // neighbour
+          { raw: "100% cotton", source: "structured", scope: "product" },
+        ],
+      },
+    });
+    expect(r.findings.fiber.value).toBe("100% cotton");
+    expect(r.findings.fiber.value).not.toMatch(/polyester/i);
+  });
+
+  it("falls back to the blob when no candidate yields a composition", () => {
+    const r = parse("Boxy tee. 95% cotton 5% elastane. 200 GSM.", {
+      candidates: { fiber: [{ raw: "Crew neck. Short sleeve.", source: "structured", scope: "product" }] },
+    });
+    expect(r.findings.fiber.value).toBe("95% cotton, 5% elastane");
+    expect(r.findings.fiber.source).toBeUndefined(); // candidate had none -> blob
+  });
+});

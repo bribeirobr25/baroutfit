@@ -4,6 +4,9 @@
 
 import type {
   CategoryResult,
+  CompositionPart,
+  FieldCandidate,
+  FieldSource,
   Findings,
   MissingKey,
   Score,
@@ -44,6 +47,41 @@ export interface ParseOptions {
   // Optional category hint (e.g. from URL slug or JSON-LD) used only when the
   // text is ambiguous. Never overrides a confident text detection.
   categoryHint?: CategoryResult;
+  // P2.4 Fase 1a — provenance-tagged fiber text slices. When a candidate yields
+  // a composition, it is used (and its source recorded) instead of the blob;
+  // absent ⇒ the blob fallback (byte-identical to pre-P2.4).
+  candidates?: { fiber?: FieldCandidate[] };
+}
+
+// Precedence for fiber candidates (#P2.4): structured+product first, then meta,
+// visible text, reader last. `scope:"catalog"` is dropped (A3/#P2.4-B).
+const FIBER_SOURCE_RANK: Record<FieldSource, number> = {
+  structured: 0,
+  meta: 1,
+  "visible-text": 2,
+  reader: 3,
+};
+
+// Choose the composition: the highest-precedence candidate whose raw text yields
+// one, else the full blob (unchanged behaviour). Returns the source iff a
+// candidate was used. Composition feeds BOTH the displayed fiber AND scoring, so
+// display and verdict stay consistent.
+function chooseComposition(
+  text: string,
+  candidates: FieldCandidate[] | undefined,
+): { composition: CompositionPart[]; source?: FieldSource } {
+  if (candidates && candidates.length) {
+    const ranked = candidates
+      .filter((c) => c.scope !== "catalog")
+      .sort((a, b) => FIBER_SOURCE_RANK[a.source] - FIBER_SOURCE_RANK[b.source]);
+    for (const c of ranked) {
+      // Normalize the candidate raw the SAME way as the blob — extractComposition
+      // assumes normalized input, so a raw slice would silently under-parse.
+      const comp = extractComposition(normalize(c.raw));
+      if (comp.length) return { composition: comp, source: c.source };
+    }
+  }
+  return { composition: extractComposition(text) };
 }
 
 export function parse(rawText: string, opts: ParseOptions = {}): ParseResult {
@@ -69,7 +107,12 @@ export function parse(rawText: string, opts: ParseOptions = {}): ParseResult {
   }
 
   // --- Tokens ---
-  const composition = extractComposition(text);
+  // P2.4 Fase 1a: composition from the highest-precedence fiber candidate (with
+  // provenance), else the blob (unchanged). Feeds display + scoring consistently.
+  const { composition, source: fiberSource } = chooseComposition(
+    text,
+    opts.candidates?.fiber,
+  );
   const fiberDisplay = compositionDisplay(composition);
   const { fiberType, premium } = detectFiberType(text);
   const { gsm, fromOz } = extractGsm(text);
@@ -83,7 +126,11 @@ export function parse(rawText: string, opts: ParseOptions = {}): ParseResult {
 
   // --- Findings (verified = read explicitly from the page) ---
   const findings: Findings = {
-    fiber: { value: fiberDisplay, verified: fiberDisplay != null },
+    fiber: {
+      value: fiberDisplay,
+      verified: fiberDisplay != null,
+      ...(fiberSource && fiberDisplay != null ? { source: fiberSource } : {}),
+    },
     fiberType: { value: fiberType, verified: fiberType != null },
     gsm: {
       value: gsm,

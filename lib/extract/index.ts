@@ -6,13 +6,22 @@
 import { isIP } from "node:net";
 import { lookup } from "node:dns/promises";
 import * as cheerio from "cheerio";
-import type { CategoryResult, ReadVia, UnreadableReason } from "@/lib/types";
+import type {
+  CategoryResult,
+  FieldCandidate,
+  ReadVia,
+  UnreadableReason,
+} from "@/lib/types";
 
 export interface ExtractResult {
   text: string;
   categoryHint: CategoryResult;
   thin: boolean; // true when too little product text was found (likely SPA)
   images?: string[]; // product image URLs (JSON-LD gallery / og / twitter), capped
+  // P2.4 Fase 1a — provenance-tagged text slices per field (fiber only for now).
+  // The parser computes the value; absence ⇒ parser falls back to the blob
+  // (byte-identical to pre-P2.4). embeddedJsonText is NOT a candidate yet (1b).
+  candidates?: { fiber?: FieldCandidate[] };
 }
 
 // `via` records WHICH path produced the read (direct HTML vs reader proxy). It
@@ -382,11 +391,25 @@ export function extractText(html: string, url: string): ExtractResult {
   }
   const images = dedupeImages(cands, MAX_IMAGES);
 
+  // P2.4 Fase 1a — fiber candidates as provenance-tagged TEXT slices (the parser
+  // computes the composition). Only already-scoped/page sources here: JSON-LD is
+  // product-scoped by `isProductType` (genuine `scope:"product"`); meta + visible
+  // text are `scope:"page"`. embeddedJsonText is deliberately EXCLUDED — it has
+  // no product scope yet (1b), and it keeps feeding the blob `text` above, so the
+  // parser still reads it via the fallback (zero regression).
+  const fiberCandidates: FieldCandidate[] = [];
+  if (jsonld.trim()) fiberCandidates.push({ raw: jsonld, source: "structured", scope: "product" });
+  const metaRaw = [ogTitle, metaDesc].filter(Boolean).join(". ").trim();
+  if (metaRaw) fiberCandidates.push({ raw: metaRaw, source: "meta", scope: "page" });
+  const visibleRaw = containerParts.join(". ").trim();
+  if (visibleRaw) fiberCandidates.push({ raw: visibleRaw, source: "visible-text", scope: "page" });
+
   return {
     text,
     categoryHint,
     thin: productLen < THIN_TEXT_THRESHOLD,
     ...(images.length ? { images } : {}),
+    ...(fiberCandidates.length ? { candidates: { fiber: fiberCandidates } } : {}),
   };
 }
 
@@ -799,6 +822,8 @@ async function fetchViaReader(url: string): Promise<ExtractResult | null> {
       categoryHint: categoryFromUrl(url),
       thin: false,
       ...(imgs.length ? { images: imgs } : {}),
+      // P2.4 Fase 1a — the reader read is page-scoped text (lowest precedence).
+      candidates: { fiber: [{ raw: text, source: "reader", scope: "page" }] },
     };
   } catch {
     return null;
@@ -835,11 +860,17 @@ export async function fetchPage(url: string): Promise<FetchResult> {
     // HTML — carry its images over so a JS-heavy-but-not-blocked page (e.g.
     // Superdry: og:image present, composition JS-loaded) keeps its photo (A2).
     const directImages = direct.ok ? direct.extract.images : undefined;
+    // Accumulate fiber candidates (A2): the direct HTML's structured/meta slices
+    // (often present even on a thin page) plus the reader's. Precedence in the
+    // parser keeps structured+product on top; the reader is the lowest fallback.
+    const directFiber = direct.ok ? (direct.extract.candidates?.fiber ?? []) : [];
+    const fiber = [...directFiber, ...(reader.candidates?.fiber ?? [])];
     return {
       ok: true,
       extract: {
         ...reader,
         ...(directImages && directImages.length ? { images: directImages } : {}),
+        ...(fiber.length ? { candidates: { fiber } } : {}),
       },
       via: "reader",
     };
