@@ -55,6 +55,7 @@ export const ptBR: Dict = {
     confidenceLabel: "Nossa certeza",
     brandMatch: "Uma casa que a gente conhece. Esta a gente conferiu na fonte.",
     again: "Ler outra",
+    noPhoto: "A foto não veio.",
     verifiedTag: "direto da página",
     inferredTag: "confirmar na etiqueta",
     alsoConsider: "O que nós escolheríamos",

@@ -55,6 +55,7 @@ export const de: Dict = {
     confidenceLabel: "Wie sicher wir sind",
     brandMatch: "Ein Haus, das wir kennen. Dieses haben wir an der Quelle geprüft.",
     again: "Noch eins lesen",
+    noPhoto: "Kein Foto durchgekommen.",
     verifiedTag: "direkt von der Seite",
     inferredTag: "am Etikett prüfen",
     alsoConsider: "Worauf wir setzen",

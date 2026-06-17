@@ -177,6 +177,27 @@ describe("extractText — images (A) & embedded JSON (B)", () => {
     expect(r.text).toMatch(/100% cotton/i);
     expect(r.text).not.toMatch(/99% polyester/i);
   });
+
+  it("reads composition from a spec-row shape {name:'Material', value:...} (P2.3)", () => {
+    // Common 'no material' cause: the material word is the sibling LABEL, not the
+    // key, so the key-only walk misses it. Stays within parsed JSON islands — the
+    // risky inline window.__NUXT__ blob remains deferred (#P2-B).
+    const next = JSON.stringify({
+      props: {
+        product: {
+          specs: [
+            { name: "Fit", value: "Regular" },
+            { name: "Material", value: "100% linen" },
+          ],
+        },
+      },
+    });
+    const html = `<html><body><h1>Shirt</h1><script id="__NEXT_DATA__" type="application/json">${next}</script></body></html>`;
+    const r = extractText(html, "https://shop.com/p/shirt");
+    expect(r.text).toMatch(/100% linen/i);
+    // The non-material spec-row value must not be pulled in as a finding source.
+    expect(r.text).not.toMatch(/\bRegular\b/);
+  });
 });
 
 describe("hasFabricSignal", () => {
@@ -212,6 +233,7 @@ describe("fetchPage reader fallback", () => {
     );
     expect(r.ok).toBe(true);
     if (r.ok) {
+      expect(r.via).toBe("reader");
       expect(r.extract.text.toLowerCase()).toContain("100% cotton");
       const parsed = parse(r.extract.text, { categoryHint: r.extract.categoryHint });
       expect(parsed.category).toBe("shirt");
@@ -251,6 +273,7 @@ describe("fetchPage reader fallback", () => {
     );
     expect(r.ok).toBe(true);
     if (r.ok) {
+      expect(r.via).toBe("reader");
       // Composition came from the reader...
       expect(r.extract.text.toLowerCase()).toContain("100% cotton");
       // ...and the photo survived from the direct fetch (the bug, fixed).
@@ -266,6 +289,64 @@ describe("fetchPage reader fallback", () => {
     const r = await fetchPage("https://www.hollisterco.com/p/blocked");
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe("anti-bot");
+  });
+});
+
+describe("fetchPage read-confidence (via) + retry (P2.1)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  // Rich enough (>200 chars of product text) to be a genuine DIRECT read, not
+  // a thin page that falls to the reader.
+  const PRODUCT_HTML =
+    `<html><head><title>Heavy Tee</title></head><body><h1>Heavy Tee</h1>` +
+    `<div class="product-description"><p>Composition: 100% cotton. 220 GSM. Boxy fit. Made in Portugal. ` +
+    `This heavyweight tee is built from long-staple combed cotton for a dense, durable hand-feel that ` +
+    `holds its shape wash after wash. Pre-shrunk, with twin-needle hems and a ribbed crew neck.</p></div></body></html>`;
+
+  it("marks a healthy direct read as via:direct", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(PRODUCT_HTML, { status: 200, headers: { "content-type": "text/html" } }),
+      ),
+    );
+    const r = await fetchPage("https://shop.example.com/heavy-tee");
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.via).toBe("direct");
+  });
+
+  it("retries the direct fetch once on a transient 5xx, then succeeds", async () => {
+    let directCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        const u = String(input);
+        if (u.startsWith("https://r.jina.ai/")) return new Response("x", { status: 500 });
+        directCalls++;
+        if (directCalls === 1) return new Response("oops", { status: 503 }); // transient
+        return new Response(PRODUCT_HTML, { status: 200, headers: { "content-type": "text/html" } });
+      }),
+    );
+    const r = await fetchPage("https://shop.example.com/heavy-tee");
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.via).toBe("direct");
+    expect(directCalls).toBe(2); // retried once
+  });
+
+  it("does NOT retry the direct fetch on a definitive 403 (goes straight to reader)", async () => {
+    let directCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        const u = String(input);
+        if (u.startsWith("https://r.jina.ai/")) return new Response("x", { status: 500 }); // reader also fails
+        directCalls++;
+        return new Response("blocked", { status: 403 }); // definitive
+      }),
+    );
+    const r = await fetchPage("https://shop.example.com/heavy-tee");
+    expect(r.ok).toBe(false);
+    expect(directCalls).toBe(1); // no retry on a hard block
   });
 });
 

@@ -137,7 +137,10 @@ describe("ResultCard — image gallery (A3)", () => {
     expect(out).toContain('loading="lazy"'); // the rest lazy
   });
 
-  it("renders no gallery when there are no images", () => {
-    expect(html(ok({}))).not.toContain("/api/image");
+  it("renders no gallery when there are no images, but an honest empty-state (M3)", () => {
+    const out = html(ok({}));
+    expect(out).not.toContain("/api/image");
+    // Not silence: the user is told the photo wasn't read.
+    expect(out).toContain("No photo came through.");
   });
 });

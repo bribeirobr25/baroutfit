@@ -26,15 +26,15 @@
 
 ## 3. Os planos focados (workstreams)
 
-### P1 — Modelo de evidência no scorer (ANALISAR) · **já redigido**
-`docs/plans/scorer-modelo-de-evidencia.md`. Cobre: poliéster/orgânico/jersey/`value<25`/non-iron/Kiton. Conserto-raiz: **`low` só por evidência negativa**; `nonIron`/jersey não corroboram qualidade. Pequeno, alto valor, independente. **Fazer primeiro.**
+### P1 — Modelo de evidência no scorer (ANALISAR) · ✅ **EXECUTADO + EM PROD**
+`docs/plans/scorer-modelo-de-evidencia.md`. Cobre: poliéster/orgânico/jersey/`value<25`/non-iron/Kiton. Conserto-raiz: **`low` só por evidência negativa**; `nonIron`/jersey não corroboram qualidade. Enviado no lote `3a128ac` (2026-06-17).
 
-### P2 — Extração: source-merge + proveniência + confiança-no-read (COLETAR) · **redigido** (`P2-extracao-source-merge.md`)
+### P2 — Extração: source-merge + proveniência + confiança-no-read (COLETAR) · **parcialmente executado** (`P2-extracao-source-merge.md`)
 A "lição Superdry" generalizada para os buckets **sem material** e **sem imagem** — TODA a camada de coleta:
-- **Source-merge:** acumular todos os sinais de todas as fontes/paths (já feito parcial: merge da imagem no reader; JSON embutido por chave-alvo; imagens og/twitter/link/json-ld-array). Generalizar para um modelo único com **proveniência por campo**.
-- **Cobertura extra:** `<img>` de galeria; imagem markdown do reader; `__NUXT__`/state SPA (best-effort, conservador anti-vizinho).
-- **Confiança no read (movido do antigo P3 — é produzido aqui):** emitir um sinal de completude do read (composição? imagem? specs? ou fragmento?) + **retry** em read flaky/bloqueado (com teto vs `maxDuration=30`). Esse sinal é consumido por P5 (mostrar "leitura parcial") e P3 (cachear só reads bons).
-- **Pré-requisito** antes de adicionar fontes pesadas (headless), para não empilhar em pipeline either/or. Médio.
+- **Source-merge:** acumular todos os sinais de todas as fontes/paths (já feito parcial: merge da imagem no reader; JSON embutido por chave-alvo; imagens og/twitter/link/json-ld-array). Generalizar para um modelo único com **proveniência por campo** (P2.4 — pendente; **reformulado pelo §7/L-C como mudança de forma do pipeline**, não rótulo).
+- **Cobertura extra:** `<img>` de galeria (P2.2 ✅); imagem markdown do reader (✅); **spec-row `{name:"Material",value:…}` em JSON island (P2.3 ✅, 2026-06-17)**; `__NUXT__`/state SPA **adiado** (#P2-B — risco de vizinho).
+- **Confiança no read (P2.1 ✅, 2026-06-17):** o contrato carrega `read: { via, got, complete }` — `via` direct/reader, `got` ⊂ {fiber,gsm,weave,image}, `complete` = fiber+gsm. **Retry** (#P2-A resolvido): 1 retry do direct só em falha **transitória** (5xx/blip de rede), nunca em timeout (orçamento gasto) nem 4xx (definitivo) → cabe em `maxDuration=30`. Consumido por P5 ("leitura parcial") e, no futuro, P3 (cachear só reads bons).
+- **Pendente:** P2.4 (proveniência por campo) + a cobertura pesada de material (headless). Médio.
 
 ### P3 — Infra: cache + analytics + corpus-de-páginas-reais (= Fase C) · a redigir
 A forma concreta da Fase C, que **consome** o sinal de confiança do P2: **cache de reads bons** (chave = URL, TTL), **analytics cookieless** (sem banner), e **alimentar o corpus com páginas reais** (robustez que compõe sozinha; conecta à disciplina "reproduzir antes de consertar"). Infra (Upstash/store) — endurece também o rate-limit in-memory atual.
@@ -43,9 +43,9 @@ A forma concreta da Fase C, que **consome** o sinal de confiança do P2: **cache
 ### P4 — Cobertura de reconhecimento (ANALISAR na origem) · = Fase E
 Reconhecer **Giza/egípcio, modal, e multi-fibra** (denim oz, lã micron, seda momme, linho) no parser, com regra anti-inflação (Giza certificado × egípcio genérico). Resolve a subavaliação na ORIGEM e encolhe a abstenção. Maior; guiado por demanda (Fase D).
 
-### P5 — Proveniência uniforme na UI (MOSTRAR) · pequeno · **depende de P2**
+### P5 — Proveniência uniforme na UI (MOSTRAR) · pequeno · **parcialmente executado**
 Generalizar o bloco #4 (fato "verificado na fonte" × julgamento "nossa avaliação") para rotular toda a UI por proveniência, incl. "leitura parcial". **Depende de P2** carregar a proveniência por campo + o sinal de confiança no contrato; por isso vem depois (ou no fim) de P2, não "junto" de forma solta.
-- **Item adicional (§6/M3):** **empty-states honestos** — hoje P5 rotula dados que *existem*; falta a ausência. Imagem/foto/specs que não foram lidas devem dizer "não foi possível ler a foto" (como o GSM ausente diz "não informado"), não renderizar silêncio.
+- **Item adicional (§6/M3):** **empty-states honestos** — ✅ **feito (2026-06-17):** sem imagem → o card mostra "No photo came through." (i18n nos 4 idiomas) em vez de silêncio. **Pendente:** rótulos de proveniência por campo (lido-da-página × inferido × reader) — dependem do P2.4.
 
 ## 4. Sequência recomendada e dependências
 1. **P1 (scorer evidence model)** — raiz do bug recorrente; pequeno, **independente de tudo**. **Agora.**
@@ -73,10 +73,25 @@ Generalizar o bloco #4 (fato "verificado na fonte" × julgamento "nossa avaliaç
 
 **M4 — A fronteira de coleta/merge precisa da própria classe de teste.** O snapshot do corpus guarda o PARSER; nada guardava a seleção de path do `fetchPage` até o teste de repro deste episódio (`extract.test.ts` → "carries the direct og:image into the reader-path result"). Generaliza o princípio #5: testes de **integridade de path/merge**, não só fixtures de fibra/score.
 
-**OPS-1 — smoke check pós-deploy** (materializa M1) · pequeno, fora dos P1–P5 · **antes de enviar o trabalho de imagem não-commitado.** Script (`scripts/smoke.mjs` ou similar) que bate na prod com 1 página *direct* (Norse) + 1 *reader* (Superdry) e **falha** se `status != ok` ou `images` vazio. Rodar manualmente após cada deploy (futuramente, step de CI pós-deploy). Barato, alto valor — é a guarda que pega exatamente este bug.
+**OPS-1 — smoke check pós-deploy** (materializa M1) · ✅ **feito (2026-06-17).** `scripts/smoke.mjs` (`pnpm smoke`) bate na prod com 1 página *direct* (Norse) + 1 *reader* (Superdry) e **falha (exit 1)** se `status != ok` ou `images` vazio. Aceita `BASE_URL`/arg para apontar a local/preview. Rodar após cada deploy (futuramente, step de CI pós-deploy). Foi a guarda que confirmou ao vivo o fix de imagens.
 
 **Sequenciamento:** OPS-1 é quase de graça e **precede** o envio do trabalho de imagem não-commitado. M2/M3/M4 **não viram workstreams novos** — entram como itens nos P2/P3/P5 existentes (notas a baked-in quando executados).
 
+## 7. Lições de arquitetura do motor (de EXECUTAR P2.1/P2.3/P5, 2026-06-17)
+
+> Enquanto §6 é sobre o que vive **ao redor** do motor (deploy, observabilidade), §7 é sobre o **interior** dele — três lições que só apareceram ao *construir* os workstreams, cada uma verificada contra o código. Elas **reformulam** P2.4/#P2-B (não só acrescentam) e tocam direto no pedido do dono: "não só coletar, mas analisar e mostrar com precisão".
+
+**L-A — A decisão direct-vs-reader usa um proxy grosseiro, e não usa o sinal que acabamos de construir.** `fetchPage` mantém o read direto só se `!thin && hasFabricSignal` — então um PDP **legitimamente curto** (descrição enxuta, mas composição em meta/JSON-LD) é empurrado para o reader (18s) **mesmo já tendo o dado**. (Sintoma concreto: os fixtures de teste do P2.1 caíam no reader até serem inflados além de 200 chars.) O `read.complete`/`got` (P2.1) é computado **na rota, depois** de o path já ter sido escolhido. *Conserto:* realimentar o sinal **na decisão** (pular o reader quando o read direto já está completo) e **na enriquecimento por campo** (ir ao reader para preencher um read direto **parcial**, ex.: tem fibra, falta GSM). Hoje o sinal é só reportado, não agido. **Pequeno, alto valor, disponível já.**
+
+**L-B — A fronteira de segurança é ESCOPO, não técnica.** Implementar o spec-row (P2.3) tornou o #P2-B concreto: o `__NUXT__` não é arriscado por ser regex/blob — é arriscado por ser **catálogo-inteiro** (carrega produtos vizinhos). O JSON-LD é seguro porque o **escopamos ao nó `Product`** (`isProductType`); os JSON islands embutidos **não têm escopo nenhum**. *Reframe de TODA a cobertura de extração:* o investimento certo não é "mais truques de parsing" e sim **escopar qualquer fonte ao produto exibido** (casar o nó por handle/SKU/productID da URL). Feito isso, o bucket `__NUXT__` adiado vira **seguro de minerar**.
+
+**L-C — A junção extração→parser é com perda, e é a razão-raiz de "mostrar resultados precisos" ser difícil.** A mais profunda. `extractText` devolve **um único `text` concatenado**; o parser re-regexa esse blob. Quando a análise roda, **a fonte de cada dado já se perdeu** — é exatamente por isso que proveniência-por-campo (P2.4) e rótulos honestos de fonte na UI seguem "pendentes". P2.4 **não é** rotular o que já existe; exige o extrator emitir **candidatos estruturados `{value, source, scope}`** que o parser consome, em vez de achatar tudo. Essa junção com perda é a razão estrutural de a gente vir consertando **sintoma a sintoma** (imagem Superdry, jersey, value<25).
+
+**Como §7 reformula os planos:**
+- **P2.4** deixa de ser "rótulos de proveniência na UI" e passa a ser **mudança de forma do pipeline** (extrator emite `{value, source, scope}`; parser consome candidatos). É o **maior alavancamento** — fica a montante tanto da análise correta quanto do display honesto (L-C).
+- **#P2-B** deixa de ser "regex-em-blob: sim/não" e passa a ser **"escopar ao produto: sim"** (casar nó por handle/SKU). Isso é o que de fato destrava os buckets difíceis com segurança (L-B).
+- **L-A** é um ganho pequeno e imediato dentro do P2.1 já entregue: realimentar `read.complete` na escolha de path + enriquecimento de read parcial.
+
 ---
 
-> **Resumo:** P1 conserta o "analisar" (ausência≠julgamento). P2 conserta o "coletar" inteiro — source-merge + cobertura + **confiança-no-read** + proveniência por campo (Superdry é só uma instância). P5 conserta o "mostrar" (proveniência uniforme, depende de P2). P3/P4 são as Fases C/E com forma concreta (P3 consome o sinal de confiança do P2). **§6 (M1–M4 + OPS-1)** conserta o que está **ao redor** do motor: deploy, observabilidade, empty-states honestos e testes de fronteira. Tudo amarrado pelos 6 princípios transversais.
+> **Resumo:** P1 conserta o "analisar" (ausência≠julgamento). P2 conserta o "coletar" inteiro — source-merge + cobertura + **confiança-no-read** + proveniência por campo (Superdry é só uma instância). P5 conserta o "mostrar" (proveniência uniforme, depende de P2). P3/P4 são as Fases C/E com forma concreta (P3 consome o sinal de confiança do P2). **§6 (M1–M4 + OPS-1)** conserta o que está **ao redor** do motor: deploy, observabilidade, empty-states honestos e testes de fronteira. **§7 (L-A/L-B/L-C)** conserta o **interior**: realimentar o sinal de read na decisão (L-A), escopar fontes ao produto (L-B) e tirar a perda da junção extração→parser (L-C, a razão-raiz dos patches sintoma-a-sintoma). Tudo amarrado pelos 6 princípios transversais.

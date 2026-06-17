@@ -227,6 +227,13 @@ Sem outras dependências pesadas. Testes com `vitest` (rápido, TS nativo). Fixt
   - **Disciplina (reproduzir antes de consertar):** A0 adicionou ao corpus fixtures que reproduziam o "low" HOJE (`noniron`→low10, `kiton-class`→low22, `generic-1construction`→low17) **+ uma GUARDA** (`lightweight-generic-tee-140gsm`→low27, value≥25 → prova que o `low` legítimo vem da evidência negativa, não do value<25). Após o conserto, diff **contido e auditado**: noniron→`indeterminate`, generic-1construction→`indeterminate`, kiton-class→`medium`, **guarda permanece `low`**, nada mais mudou.
   - **Validação:** 132 → **138 testes** (+4 unit, +2 fixtures); lint/build limpos; curl ao vivo (Hugo Boss → `indeterminate`). Visual via Docker MCP: pendente (servidor MCP caiu na sessão).
 
+- **2026-06-17 — Episódio "imagens não aparecem" diagnosticado + 4 workstreams (OPS-1, P2.1, P2.3, P5).** O bug em prod era **disco ≠ deployado** (M1): o fix de imagem estava verde no disco mas não-commitado. Capturado o JSON real de `/api/analyze` (Norse 2 imgs, Superdry 5) provando que a extração local estava correta; o dono commitou+enviou (`3a128ac`) e o **smoke check ao vivo** confirmou (Norse/Superdry `ok` + imagens). Lições registradas no roadmap §6 (M1–M4). Depois, a pedido do dono, executados os 4 workstreams:
+  - **OPS-1 (§6/M1):** `scripts/smoke.mjs` (`pnpm smoke`) — bate na prod (1 direct + 1 reader) e falha se `status!=ok`/`images` vazio. A guarda que pega exatamente este bug.
+  - **P2.1 (confiança no read + retry):** contrato carrega `read: { via, got, complete }` (direct→complete, reader→partial honesto). **Retry** (#P2-A): 1 retry do direct só em falha **transitória** (5xx/blip), nunca timeout/4xx → cabe em `maxDuration=30`.
+  - **P2.3 (cobertura de material, subconjunto seguro):** `collectMaterialValues` passa a ler o shape **spec-row** `{name:"Material",value:…}` (label-irmão) em JSON islands já parseados + sinônimos (composiz/matière/tessuto). **`__NUXT__`/state-blob inline mantido adiado (#P2-B)** — risco de vizinho.
+  - **P5 (MOSTRAR — §6/M3):** empty-state honesto — sem imagem o card mostra "No photo came through." (i18n EN/PT/DE/ES) em vez de silêncio. Proveniência por campo segue dependente do P2.4.
+  - **Disciplina:** cada conserto começou por um teste que reproduz (spec-row falhando; repro do merge reader-path). **Validação:** 139 → **144 testes**, lint/build limpos, `read` confirmado ao vivo local (Norse via=direct/complete; Superdry via=reader/partial), `pnpm smoke` verde contra prod. Não-commitado (aguarda push do dono).
+
 ## 6. Status do Definition of Done (CLAUDE.md §8)
 
 - [x] Stack escolhida e justificada (§5.1).

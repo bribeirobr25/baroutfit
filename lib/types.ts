@@ -55,6 +55,22 @@ export type ScoreBand =
 export type Wrinkle = "low" | "medium" | "high" | "unknown";
 export type Confidence = "verified" | "partial" | "unreadable";
 
+// P2.1 — read-completeness signal. WHICH path read the page and WHAT the read
+// actually yielded. `via` (direct vs reader proxy) and `image` presence are not
+// captured by `confidence`/`missing`, so this is a separate, honest record of
+// the read itself — consumed by the UI ("partial read", §6/M3) and, later, by
+// infra to cache only good reads (P3). Never fills a gap; only reports it.
+export type ReadVia = "direct" | "reader";
+export type ReadSignal = "fiber" | "gsm" | "weave" | "image";
+export interface ReadInfo {
+  via: ReadVia;
+  got: ReadSignal[];
+  // True when the read yielded the fabric facts that anchor a confident verdict
+  // (fiber + GSM). A "good read" worth caching; the inverse is an honest
+  // "partial read", not an invented verdict.
+  complete: boolean;
+}
+
 // A single extracted datum. `verified: true` means it was read explicitly from
 // the page; `verified: false` means inferred/absent (PARSER §2, SPEC §3).
 export interface Finding<T> {
@@ -146,6 +162,8 @@ export interface AnalyzeOk {
   // page exposes none. Capped in the extractor.
   images?: string[];
   confidence: Confidence;
+  // P2.1 — how the page was read and what the read yielded (path + signals).
+  read?: ReadInfo;
   rawNotes?: string; // debug only, not shown to the user
 }
 

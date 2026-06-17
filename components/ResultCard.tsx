@@ -136,7 +136,7 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
       {/* product gallery — proxied same-origin so the CSP stays closed. A
           horizontal scroll-snap strip (mobile-first); first image eager, the
           rest lazy. Capped to bound proxy fetches. */}
-      {data.images && data.images.length > 0 && (
+      {data.images && data.images.length > 0 ? (
         <div className="relative">
           <div className="flex snap-x snap-mandatory overflow-x-auto">
             {data.images.slice(0, 4).map((src, i) => (
@@ -155,6 +155,12 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-paper-raised via-transparent to-transparent"
           />
         </div>
+      ) : (
+        // Honest empty-state (§6/M3): say the photo wasn't read rather than
+        // render silence. Slim + muted so it isn't mistaken for a broken image.
+        <p className="border-b border-line px-7 py-3 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted sm:px-10">
+          {dict.result.noPhoto}
+        </p>
       )}
 
       <div className="p-7 sm:p-10">

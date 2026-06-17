@@ -59,6 +59,7 @@ export const en = {
     confidenceLabel: "How sure we are",
     brandMatch: "A house we know. We've read this one against the source ourselves.",
     again: "Read another",
+    noPhoto: "No photo came through.",
     verifiedTag: "straight from the page",
     inferredTag: "to confirm on the tag",
     alsoConsider: "What we'd reach for",

@@ -6,7 +6,7 @@
 import { isIP } from "node:net";
 import { lookup } from "node:dns/promises";
 import * as cheerio from "cheerio";
-import type { CategoryResult, UnreadableReason } from "@/lib/types";
+import type { CategoryResult, ReadVia, UnreadableReason } from "@/lib/types";
 
 export interface ExtractResult {
   text: string;
@@ -15,8 +15,11 @@ export interface ExtractResult {
   images?: string[]; // product image URLs (JSON-LD gallery / og / twitter), capped
 }
 
+// `via` records WHICH path produced the read (direct HTML vs reader proxy). It
+// is a property of the fetch, not of pure extraction, so it lives here and is
+// surfaced as part of the P2.1 read-confidence signal.
 export type FetchResult =
-  | { ok: true; extract: ExtractResult }
+  | { ok: true; extract: ExtractResult; via: ReadVia }
   | { ok: false; reason: UnreadableReason };
 
 const USER_AGENT =
@@ -161,7 +164,19 @@ function jsonLdNodes($: cheerio.CheerioAPI): { text: string; images: string[] } 
 // invented data). Instead we collect only the string VALUES of material-ish
 // keys; the parser's prose-rejection + dedup still apply.
 const MATERIAL_KEY_RE =
-  /composition|material|fabric|fibre|fiber|stoff|zusammensetzung|composic|materia|tecid/i;
+  /composition|composiz|material|mati[eè]re|fabric|fibre|fiber|stoff|tessuto|zusammensetzung|composic|materia|tecid/i;
+
+// Spec-row shape: { name/label: "Material", value/text: "100% linen" } — the
+// material word is the sibling LABEL, not the key, so the key-only walk misses
+// it (a common 'no material' cause). Mirrors JSON-LD additionalProperty.
+const SPEC_LABEL_KEYS = ["name", "label", "title", "key", "attributename"];
+const SPEC_VALUE_KEYS = ["value", "values", "text", "content", "attributevalue"];
+
+function pushSpecValue(out: string[], v: unknown): void {
+  if (typeof v === "string" && v.trim()) out.push(v);
+  else if (Array.isArray(v))
+    for (const x of v) if (typeof x === "string" && x.trim()) out.push(x);
+}
 
 function collectMaterialValues(node: unknown, out: string[], depth = 0): void {
   if (depth > 12 || node == null || typeof node !== "object") return;
@@ -169,7 +184,22 @@ function collectMaterialValues(node: unknown, out: string[], depth = 0): void {
     for (const x of node) collectMaterialValues(x, out, depth + 1);
     return;
   }
-  for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+  const obj = node as Record<string, unknown>;
+
+  // Spec-row: a label field naming "material"/"composition" gates its value
+  // sibling. Conservative — requires the explicit material label, so a generic
+  // { name, value } pair (e.g. Fit/Regular) is not collected. Stays within the
+  // already-parsed JSON islands; inline state blobs (__NUXT__) remain deferred
+  // (#P2-B) precisely because they aren't scoped to the viewed product.
+  const lowered = new Map<string, unknown>();
+  for (const [k, v] of Object.entries(obj)) lowered.set(k.toLowerCase(), v);
+  const labelKey = SPEC_LABEL_KEYS.find((lk) => typeof lowered.get(lk) === "string");
+  const label = labelKey ? (lowered.get(labelKey) as string) : undefined;
+  if (label && MATERIAL_KEY_RE.test(label)) {
+    for (const vk of SPEC_VALUE_KEYS) pushSpecValue(out, lowered.get(vk));
+  }
+
+  for (const [k, v] of Object.entries(obj)) {
     if (MATERIAL_KEY_RE.test(k) && typeof v === "string" && v.trim()) out.push(v);
     collectMaterialValues(v, out, depth + 1);
   }
@@ -522,35 +552,55 @@ export function hasFabricSignal(text: string): boolean {
   return FABRIC_SIGNAL_RE.test(text);
 }
 
-async function directFetch(url: string): Promise<FetchResult> {
+// One direct attempt. `retryable` marks a TRANSIENT failure (network blip or
+// 5xx server error) worth a quick retry; a timeout (budget already spent) or a
+// definitive 4xx (404/403 won't change on an immediate same-IP retry) is not.
+async function attemptDirect(
+  url: string,
+): Promise<{ res: FetchResult; retryable: boolean }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await safeFetch(url, BROWSER_HEADERS, controller.signal);
-    if (!res) return { ok: false, reason: "blocked" }; // unsafe host / too many redirects
+    if (!res) return { res: { ok: false, reason: "blocked" }, retryable: false }; // unsafe host / too many redirects
 
     const statusReason = reasonForStatus(res.status);
-    if (statusReason) return { ok: false, reason: statusReason };
+    // 5xx are transient server errors (retryable); 4xx are definitive.
+    if (statusReason)
+      return { res: { ok: false, reason: statusReason }, retryable: res.status >= 500 };
 
     const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.includes("html")) return { ok: false, reason: "blocked" };
+    if (!contentType.includes("html"))
+      return { res: { ok: false, reason: "blocked" }, retryable: false };
 
     const html = await readBodyCapped(res, MAX_BODY_BYTES);
-    if (html == null) return { ok: false, reason: "blocked" }; // oversize body
+    if (html == null) return { res: { ok: false, reason: "blocked" }, retryable: false }; // oversize body
     const extract = extractText(html, url);
 
     // A near-empty page with no usable text -> likely JS-heavy SPA.
-    if (extract.text.length < 40) return { ok: false, reason: "js-heavy" };
+    if (extract.text.length < 40)
+      return { res: { ok: false, reason: "js-heavy" }, retryable: false };
 
-    return { ok: true, extract };
+    return { res: { ok: true, extract, via: "direct" }, retryable: false };
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
-      return { ok: false, reason: "timeout" };
+      return { res: { ok: false, reason: "timeout" }, retryable: false }; // spent the budget
     }
-    return { ok: false, reason: "blocked" };
+    return { res: { ok: false, reason: "blocked" }, retryable: true }; // network blip
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Direct fetch with ONE retry on a transient failure (P2.1 / #P2-A). Anti-bot
+// blocking is sometimes non-deterministic, so a quick retry can recover a flaky
+// read. Retries cost little: transient errors return fast (not a full timeout),
+// so the worst case stays well within maxDuration=30 (≤2 quick fails + reader).
+async function directFetch(url: string): Promise<FetchResult> {
+  const first = await attemptDirect(url);
+  if (first.res.ok || !first.retryable) return first.res;
+  const second = await attemptDirect(url);
+  return second.res;
 }
 
 // Reader proxy returns the WHOLE page as markdown (nav, related products,
@@ -648,6 +698,7 @@ export async function fetchPage(url: string): Promise<FetchResult> {
         ...reader,
         ...(directImages && directImages.length ? { images: directImages } : {}),
       },
+      via: "reader",
     };
   }
 

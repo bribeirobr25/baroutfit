@@ -55,6 +55,7 @@ export const es: Dict = {
     confidenceLabel: "Nuestra certeza",
     brandMatch: "Una casa que conocemos. A esta la hemos leído en la fuente.",
     again: "Leer otra",
+    noPhoto: "La foto no llegó.",
     verifiedTag: "directo de la página",
     inferredTag: "confirmar en la etiqueta",
     alsoConsider: "Lo que elegiríamos",

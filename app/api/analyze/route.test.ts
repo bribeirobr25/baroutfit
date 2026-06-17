@@ -24,7 +24,9 @@ describe("POST /api/analyze", () => {
       <title>The T-Shirt — White</title>
       <meta name="description" content="100% organic cotton, long staple. 180 GSM. Compact single jersey." />
       </head><body><main><h1>The T-Shirt</h1>
-      <div class="product-detail">100% organic cotton long staple, 180 GSM, twin-needle hems.</div>
+      <div class="product-detail">100% organic cotton long staple, 180 GSM, twin-needle hems.
+      A wardrobe staple cut from compact single-jersey for a clean drape and a soft but structured
+      hand. GOTS-certified yarn, pre-shrunk, with a ribbed collar that keeps its shape over time.</div>
       </main></body></html>`;
     vi.stubGlobal(
       "fetch",
@@ -40,6 +42,10 @@ describe("POST /api/analyze", () => {
     expect(json.category).toBe("tshirt");
     expect(json.findings.gsm.value).toBe(180);
     expect(json.confidence).toBe("verified");
+    // P2.1 read-confidence: a healthy direct read with fiber + GSM is complete.
+    expect(json.read.via).toBe("direct");
+    expect(json.read.got).toEqual(expect.arrayContaining(["fiber", "gsm"]));
+    expect(json.read.complete).toBe(true);
     expect(json.brandMatch.name).toBe("Asket");
     expect(json.brandMatch.ref).toBe(true);
     // Decisão #4: Asket has one audited tshirt -> category match surfaces the

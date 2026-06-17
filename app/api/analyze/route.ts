@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { fetchPage } from "@/lib/extract";
 import { parse } from "@/lib/parser";
 import { matchAuditedProduct, recommendAlternatives } from "@/lib/knowledge";
-import type { AnalyzeResult, BrandMatch } from "@/lib/types";
+import type { AnalyzeResult, BrandMatch, ReadInfo, ReadSignal } from "@/lib/types";
 
 export const runtime = "nodejs";
 // Allows the direct fetch (~9s) plus the reader-proxy fallback (~18s) for
@@ -136,6 +136,19 @@ export async function POST(req: Request): Promise<NextResponse> {
     excludeBrand: brandName,
   });
 
+  // P2.1 — read-confidence: which path read the page and what it yielded.
+  // Reports only what was actually obtained; never fills a gap.
+  const got: ReadSignal[] = [];
+  if (parsed.findings.fiber.verified) got.push("fiber");
+  if (parsed.findings.gsm.verified) got.push("gsm");
+  if (parsed.findings.weave.verified) got.push("weave");
+  if (fetched.extract.images?.length) got.push("image");
+  const read: ReadInfo = {
+    via: fetched.via,
+    got,
+    complete: got.includes("fiber") && got.includes("gsm"),
+  };
+
   const result: AnalyzeResult = {
     status: "ok",
     category: parsed.category,
@@ -148,8 +161,9 @@ export async function POST(req: Request): Promise<NextResponse> {
     recommendations,
     ...(fetched.extract.images?.length ? { images: fetched.extract.images } : {}),
     confidence: parsed.confidence,
+    read,
     ...(process.env.NODE_ENV !== "production"
-      ? { rawNotes: `host=${safeHost(url)} thin=${fetched.extract.thin}` }
+      ? { rawNotes: `host=${safeHost(url)} thin=${fetched.extract.thin} via=${fetched.via}` }
       : {}),
   };
 
