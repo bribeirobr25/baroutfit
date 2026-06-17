@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { I18nProvider } from "@/lib/i18n/provider";
-import { ResultCard } from "./ResultCard";
+import { ResultCard, Lightbox } from "./ResultCard";
+import { en as enDict } from "@/lib/i18n/dictionaries/en";
 import type { AnalyzeOk, BrandMatch } from "@/lib/types";
 
 // Render-content validation for the decisão #4 reference block (stands in for
@@ -115,26 +116,29 @@ describe("ResultCard — verified reference block (decisão #4)", () => {
   });
 });
 
-describe("ResultCard — image gallery (A3)", () => {
-  it("renders up to 4 images via the same-origin proxy (capped)", () => {
+describe("ResultCard — image gallery (G2)", () => {
+  it("renders all images via the same-origin proxy, with thumbnails + arrows when >=3", () => {
     const out = html(
-      ok({
-        images: [
-          "https://cdn.x/1.jpg",
-          "https://cdn.x/2.jpg",
-          "https://cdn.x/3.jpg",
-          "https://cdn.x/4.jpg",
-          "https://cdn.x/5.jpg",
-        ],
-      }),
+      ok({ images: ["https://cdn.x/1.jpg", "https://cdn.x/2.jpg", "https://cdn.x/3.jpg"] }),
     );
-    const imgs = out.match(/<img /g) ?? [];
-    expect(imgs.length).toBe(4); // capped at 4 in the UI
-    expect(out).toContain(
-      `/api/image?src=${encodeURIComponent("https://cdn.x/1.jpg")}`,
-    );
-    expect(out).toContain('loading="eager"'); // first image eager
+    expect(out).toContain(`/api/image?src=${encodeURIComponent("https://cdn.x/1.jpg")}`);
+    expect(out).toContain(`/api/image?src=${encodeURIComponent("https://cdn.x/3.jpg")}`);
+    expect(out).toContain('loading="eager"'); // first slide eager
     expect(out).toContain('loading="lazy"'); // the rest lazy
+    expect(out).toContain('aria-roledescription="gallery"');
+    expect(out).toContain("Previous image"); // arrow aria-label (multi)
+    expect(out).toContain("Next image");
+    expect(out).toContain("Image 1"); // thumbnail aria-label (>=3 -> thumbnails)
+    expect(out).toContain("cursor-zoom-in"); // slides open the lightbox (G3)
+    // Lightbox is closed by default → portal never renders in static markup
+    // (SSR-safe: createPortal is not called during renderToStaticMarkup).
+    expect(out).not.toContain('role="dialog"');
+  });
+
+  it("single image: no arrows, no thumbnails/dots", () => {
+    const out = html(ok({ images: ["https://cdn.x/only.jpg"] }));
+    expect(out).toContain(`/api/image?src=${encodeURIComponent("https://cdn.x/only.jpg")}`);
+    expect(out).not.toContain("Previous image"); // single -> no nav
   });
 
   it("renders no gallery when there are no images, but an honest empty-state (M3)", () => {
@@ -142,5 +146,59 @@ describe("ResultCard — image gallery (A3)", () => {
     expect(out).not.toContain("/api/image");
     // Not silence: the user is told the photo wasn't read.
     expect(out).toContain("No photo came through.");
+  });
+});
+
+describe("ResultCard — open on the store link (G2)", () => {
+  it("shows the store link with host when sourceUrl is provided", () => {
+    const out = renderToStaticMarkup(
+      <I18nProvider>
+        <ResultCard data={ok({})} sourceUrl="https://www.norseprojects.com/products/x" />
+      </I18nProvider>,
+    );
+    expect(out).toContain("Open on the store");
+    expect(out).toContain("norseprojects.com"); // www stripped
+    expect(out).toContain('rel="noopener noreferrer"');
+    expect(out).toContain('target="_blank"');
+  });
+
+  it("hides the store link when no sourceUrl", () => {
+    const out = html(ok({}));
+    expect(out).not.toContain("Open on the store");
+  });
+});
+
+describe("Lightbox markup (G3)", () => {
+  const imgs = ["https://cdn.x/1.jpg", "https://cdn.x/2.jpg", "https://cdn.x/3.jpg"];
+  const render = (index: number) =>
+    renderToStaticMarkup(
+      <Lightbox
+        images={imgs}
+        index={index}
+        alt="T-shirt"
+        dict={enDict}
+        onClose={() => {}}
+        onPrev={() => {}}
+        onNext={() => {}}
+      />,
+    );
+
+  it("renders an accessible dialog with the proxied image + counter", () => {
+    const out = render(1);
+    expect(out).toContain('role="dialog"');
+    expect(out).toContain('aria-modal="true"');
+    expect(out).toContain('aria-label="T-shirt"');
+    expect(out).toContain("Close"); // close button label
+    expect(out).toContain(`/api/image?src=${encodeURIComponent("https://cdn.x/2.jpg")}`);
+    expect(out).toContain("2 / 3"); // counter at index 1
+  });
+
+  it("hides prev at the first image and next at the last (clamped)", () => {
+    const first = render(0);
+    expect(first).not.toContain("Previous image");
+    expect(first).toContain("Next image");
+    const last = render(2);
+    expect(last).toContain("Previous image");
+    expect(last).not.toContain("Next image");
   });
 });

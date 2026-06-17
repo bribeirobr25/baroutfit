@@ -200,6 +200,54 @@ describe("extractText — images (A) & embedded JSON (B)", () => {
   });
 });
 
+describe("extractText — image dedup + gates (G1)", () => {
+  it("collapses size-variants of the same photo to one (keeps the largest)", () => {
+    const html = `<html><head>
+      <meta property="og:image" content="https://cdn.shop/files/p.jpg?v=1&width=2048">
+      <meta property="og:image" content="https://cdn.shop/files/p.jpg?crop=center&width=1200">
+      </head><body><h1>Tee</h1><p>100% cotton</p></body></html>`;
+    const r = extractText(html, "https://shop.com/products/tee");
+    expect(r.images).toHaveLength(1); // same file, not two
+    expect(r.images?.[0]).toContain("width=2048"); // kept the larger variant
+  });
+
+  it("drops thumbnails by max srcset width (Gate C), keeps the full image", () => {
+    const html = `<html><body><main>
+      <div class="product-gallery">
+        <img src="https://cdn.x/main.jpg" srcset="https://cdn.x/main-1200.jpg 1200w">
+        <img src="https://cdn.x/thumb.jpg?width=80">
+      </div><p>100% cotton</p></main></body></html>`;
+    const r = extractText(html, "https://shop.com/products/tee");
+    expect(r.images?.some((u) => u.includes("main"))).toBe(true);
+    expect(r.images?.some((u) => u.includes("thumb"))).toBe(false);
+  });
+
+  it("Gate B (opportunistic): when the SKU is in the URL, keeps only matching gallery images", () => {
+    const html = `<html><body><main>
+      <div class="product-gallery">
+        <img src="https://cdn.x/12345-front.jpg?width=1000">
+        <img src="https://cdn.x/banner-promo.jpg?width=1000">
+      </div><p>100% cotton</p></main></body></html>`;
+    const r = extractText(html, "https://shop.com/p/cool-shirt-12345");
+    expect(r.images?.some((u) => u.includes("12345-front"))).toBe(true);
+    expect(r.images?.some((u) => u.includes("banner-promo"))).toBe(false);
+  });
+
+  it("Gate B never zeroes a gallery: asset-id filenames with no URL match are kept (Shopify regression guard)", () => {
+    // Norse case: handle has no digits, image is an asset id -> no token match ->
+    // Gate B must be ignored, NOT filter everything out.
+    const html = `<html><body><main>
+      <div class="product-gallery"><img src="https://cdn.shop/files/N01-0679-0001-10.jpg?width=1000"></div>
+      <p>100% cotton</p></main></body></html>`;
+    const r = extractText(
+      html,
+      "https://norseprojects.com/products/norse-standard-heavy-loose-t-shirt-white",
+    );
+    expect(r.images).toHaveLength(1);
+    expect(r.images?.[0]).toContain("N01-0679-0001-10.jpg");
+  });
+});
+
 describe("hasFabricSignal", () => {
   it("detects composition / GSM / fiber signals", () => {
     expect(hasFabricSignal("Composition: 100% cotton")).toBe(true);

@@ -27,7 +27,7 @@ function buildShareUrl(data: AnalyzeOk): string {
 type UiState =
   | { status: "input" }
   | { status: "analyzing" }
-  | { status: "result"; data: AnalyzeOk }
+  | { status: "result"; data: AnalyzeOk; sourceUrl: string }
   | { status: "error" };
 
 // Covers the server fast path plus the reader-proxy fallback for blocked shops.
@@ -80,7 +80,9 @@ export function Analyzer() {
       });
       const data = (await res.json()) as AnalyzeResult;
       setState(
-        data.status === "ok" ? { status: "result", data } : { status: "error" },
+        data.status === "ok"
+          ? { status: "result", data, sourceUrl: value }
+          : { status: "error" },
       );
     } catch {
       setState({ status: "error" });
@@ -163,7 +165,7 @@ export function Analyzer() {
 
       {state.status === "result" && (
         <div className="space-y-6">
-          <ResultCard data={state.data} />
+          <ResultCard data={state.data} sourceUrl={state.sourceUrl} />
           <Recommendations items={state.data.recommendations} />
           <div className="flex flex-wrap gap-3">
             <button

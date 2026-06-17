@@ -295,11 +295,12 @@ export function extractText(html: string, url: string): ExtractResult {
     ].join(", "),
   ).remove();
 
-  // Gallery <img> (P2.2): collected AFTER the chrome strip (related/nav already
-  // gone) but BEFORE <a> removal (zoom links wrap product imgs). Conservative —
-  // only product-gallery/media containers, to avoid thumbnails/related. Lowest
-  // priority (after meta/JSON-LD). Reads src / data-src / first srcset URL.
-  const galleryImgs: string[] = [];
+  // Gallery <img> (P2.2 + G1): collected AFTER the chrome strip (related/nav/
+  // carousel already gone — Gate A scope) but BEFORE <a> removal (zoom links
+  // wrap product imgs). Only product-gallery/media/photo containers, never
+  // page-wide. Lowest priority (after meta/JSON-LD). Captures the max declared
+  // width for the anti-thumbnail gate (C).
+  const galleryRaw: ImgCand[] = [];
   $(
     [
       '[class*="gallery" i] img',
@@ -307,14 +308,19 @@ export function extractText(html: string, url: string): ExtractResult {
       '[class*="product__media" i] img',
       '[class*="product-image" i] img',
       '[class*="productimage" i] img',
+      '[class*="product-photo" i] img',
+      '[class*="product__photo" i] img',
+      '[class*="media-gallery" i] img',
+      '[class*="image-gallery" i] img',
       '[class*="pdp" i] img',
+      'figure[class*="product" i] img',
     ].join(", "),
   ).each((_, el) => {
     const a = $(el);
-    const fromSrcset =
-      (a.attr("srcset") || a.attr("data-srcset") || "").split(",")[0]?.trim().split(/\s+/)[0] ?? "";
+    const srcset = a.attr("srcset") || a.attr("data-srcset") || "";
+    const fromSrcset = srcset.split(",")[0]?.trim().split(/\s+/)[0] ?? "";
     const src = a.attr("src") || a.attr("data-src") || fromSrcset;
-    if (src) galleryImgs.push(src);
+    if (src) galleryRaw.push({ url: src, width: maxWidthHint(srcset, a.attr("width") ?? "", src) });
   });
 
   // Strip link text. Product facts (composition, GSM, weave) live in
@@ -356,18 +362,25 @@ export function extractText(html: string, url: string): ExtractResult {
   let categoryHint = categoryFromUrl(url);
   if (categoryHint === "unknown") categoryHint = categoryFromUrl(jsonld);
 
-  // Product images: resolve each candidate to an absolute http(s) URL, dedupe,
-  // and cap. Order preserves source priority (JSON-LD gallery first).
-  const seen = new Set<string>();
-  const images: string[] = [];
-  for (const cand of [...imageCandidates, ...galleryImgs]) {
+  // Product images (G1). Trusted structured/meta candidates (JSON-LD, og,
+  // twitter, link) are kept as-is; the broadened gallery <img> set passes the
+  // anti-thumbnail gate (C) and the opportunistic SKU gate (B). Then everything
+  // is resolved to absolute http(s), collapsed by image identity (size-variants
+  // dedupe to one photo), and capped. Order preserves source priority.
+  const galleryGated = applyGateB(
+    galleryRaw.filter((c) => c.width === 0 || c.width >= MIN_IMAGE_WIDTH),
+    url,
+  );
+  const cands: ImgCand[] = [];
+  for (const cand of imageCandidates) {
     const r = resolveImage(cand, url);
-    if (r && !seen.has(r)) {
-      seen.add(r);
-      images.push(r);
-      if (images.length >= MAX_IMAGES) break;
-    }
+    if (r) cands.push({ url: r, width: maxWidthHint("", "", r) });
   }
+  for (const c of galleryGated) {
+    const r = resolveImage(c.url, url);
+    if (r) cands.push({ url: r, width: c.width || maxWidthHint("", "", r) });
+  }
+  const images = dedupeImages(cands, MAX_IMAGES);
 
   return {
     text,
@@ -378,6 +391,113 @@ export function extractText(html: string, url: string): ExtractResult {
 }
 
 const MAX_IMAGES = 5;
+
+// --- Image identity + gates (G1) --------------------------------------------
+// Query params that only change SIZE/format of the SAME image. Stripped when
+// comparing identity so a CDN's width/crop variants collapse to one photo
+// (e.g. Shopify ...?width=2048 vs ...?width=1200 are the same picture).
+const RESIZE_PARAMS = new Set([
+  "width", "height", "w", "h", "crop", "fit", "quality", "q", "dpr",
+  "sw", "sh", "v", "version", "format", "fm", "auto", "cs", "ixlib",
+]);
+
+interface ImgCand {
+  url: string; // a real, working absolute URL (never normalized for storage)
+  width: number; // largest declared width; 0 = unknown
+}
+
+function imageIdentity(absUrl: string): string {
+  try {
+    const u = new URL(absUrl);
+    const kept = [...u.searchParams.entries()]
+      .filter(([k]) => !RESIZE_PARAMS.has(k.toLowerCase()))
+      .sort(([a], [b]) => a.localeCompare(b));
+    const q = kept.map(([k, v]) => `${k}=${v}`).join("&");
+    return `${u.hostname.toLowerCase()}${u.pathname}${q ? `?${q}` : ""}`;
+  } catch {
+    return absUrl;
+  }
+}
+
+// Largest declared width for an image (srcset 'w' descriptors, width attr, or a
+// width/w query param). 0 = unknown. Used by the anti-thumbnail gate (C); reads
+// the MAX, not the base src, so a small-by-default image with a large srcset is
+// not wrongly dropped.
+function maxWidthHint(srcset: string, widthAttr: string, url: string): number {
+  let max = 0;
+  for (const part of srcset.split(",")) {
+    const m = part.trim().match(/\s(\d+)w$/);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  if (/^\d+$/.test(widthAttr)) max = Math.max(max, Number(widthAttr));
+  try {
+    const u = new URL(url, "http://_");
+    const w = u.searchParams.get("width") ?? u.searchParams.get("w");
+    if (w && /^\d+$/.test(w)) max = Math.max(max, Number(w));
+  } catch {
+    /* ignore */
+  }
+  return max;
+}
+
+// Tokens from the page URL that identify THIS product: the last path segment
+// (Shopify handle) + any 4+ digit run (SKU / product id). Used by the
+// opportunistic Gate B — a neighbour's image carries a different SKU.
+function productUrlTokens(pageUrl: string): string[] {
+  const tokens: string[] = [];
+  try {
+    const u = new URL(pageUrl);
+    const segs = u.pathname.split("/").filter(Boolean);
+    const last = (segs[segs.length - 1] ?? "")
+      .replace(/\.(html?|aspx?|php)$/i, "")
+      .toLowerCase();
+    if (last.length >= 4) tokens.push(last);
+  } catch {
+    /* ignore */
+  }
+  for (const m of pageUrl.matchAll(/\d{4,}/g)) tokens.push(m[0]);
+  return tokens;
+}
+
+const MIN_IMAGE_WIDTH = 300; // below this (when known) = thumbnail/icon (Gate C)
+
+// Gate B (opportunistic): if the URL yields SKU/handle tokens AND at least one
+// candidate's URL references one, keep only the matching ones. If NONE match
+// (common — CDNs name by asset id, so the handle isn't in the filename), the
+// gate is IGNORED rather than zeroing the gallery.
+function applyGateB(cands: ImgCand[], pageUrl: string): ImgCand[] {
+  const tokens = productUrlTokens(pageUrl);
+  if (!tokens.length) return cands;
+  const matched = cands.filter((c) =>
+    tokens.some((t) => c.url.toLowerCase().includes(t)),
+  );
+  return matched.length ? matched : cands;
+}
+
+// Collapse size-variants to one photo, keeping a real working URL — prefer the
+// largest declared width (https as tiebreak). Preserves source-priority order
+// (Map keeps first-seen position) and caps. (G1.1)
+function dedupeImages(cands: ImgCand[], max: number): string[] {
+  const byId = new Map<string, ImgCand>();
+  for (const c of cands) {
+    const id = imageIdentity(c.url);
+    const prev = byId.get(id);
+    if (!prev) {
+      byId.set(id, c);
+      continue;
+    }
+    const keep =
+      c.width !== prev.width
+        ? c.width > prev.width
+          ? c
+          : prev
+        : c.url.startsWith("https")
+          ? c
+          : prev;
+    byId.set(id, keep);
+  }
+  return [...byId.values()].slice(0, max).map((c) => c.url);
+}
 
 // Resolve an image candidate to an absolute http(s) URL (vs the page URL).
 // Returns undefined for missing/relative/non-web values or SVG (logos/icons).
@@ -650,16 +770,13 @@ async function fetchViaReader(url: string): Promise<ExtractResult | null> {
     // Markdown images from the FOCUSED product window (P2.2) — less nav/logo
     // noise than the raw page. Capped. fetchPage prefers direct images, so these
     // only surface when the direct fetch yielded none (fully blocked pages).
-    const imgs: string[] = [];
-    const seenImg = new Set<string>();
+    const rawImgs: ImgCand[] = [];
     for (const m of text.matchAll(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g)) {
       const r = resolveImage(m[1], url);
-      if (r && !seenImg.has(r)) {
-        seenImg.add(r);
-        imgs.push(r);
-        if (imgs.length >= 3) break;
-      }
+      if (r) rawImgs.push({ url: r, width: maxWidthHint("", "", r) });
     }
+    // Identity-dedup (G1): collapse size-variants the reader markdown may repeat.
+    const imgs = dedupeImages(rawImgs, 3);
     return {
       text,
       categoryHint: categoryFromUrl(url),
