@@ -140,26 +140,29 @@ export function scoreFabric(d: ParserData): Score {
   const gsmHigh = gsmQuality != null && gsmQuality >= 3;
   const hasConstruction = d.construction.length > 0 || premiumSpin;
 
-  // Corroborating evidence beyond the fiber name. Fiber alone — even a good one
-  // — is NOT enough to grade overall quality (mirrors the verified-confidence
-  // rule: fiber + at least one of {GSM, weave, construction}). Without it the
-  // honest verdict is "not enough data", never "low quality" (PARSER §5).
+  // Corroboration = signals that genuinely inform QUALITY (and add to the
+  // score). Fiber alone isn't enough; without corroboration the honest verdict
+  // is "not enough data", never "low" (PARSER §5). Excluded as non-informative
+  // (audit 2026-06-16): `jersey` (the universal default tee knit), `nonIron` (a
+  // wrinkle treatment, 0 value), and a LONE construction token (one signal is
+  // too thin to grade — a single "mother-of-pearl" must not lift a no-GSM item).
+  // A single construction token still counts when paired with another signal.
+  const informativeWeave = d.weave != null && d.weave !== "jersey";
   const hasCorroboration =
     d.gsm != null ||
-    d.weave != null ||
-    d.construction.length > 0 ||
-    d.nonIron ||
-    premiumSpin;
+    informativeWeave ||
+    premiumSpin ||
+    d.construction.length >= 2;
 
   let band: Score["band"];
   if (!hasCorroboration) {
     band = "indeterminate";
   } else if (goodFiber && (appropriate || gsmHigh) && hasConstruction) {
     band = "high";
-  } else if (
-    (gsmQuality != null && gsmQuality <= 1 && !goodFiber) ||
-    value < 25
-  ) {
+  } else if (gsmQuality != null && gsmQuality <= 1 && !goodFiber) {
+    // `low` requires NAMED negative evidence — a stated light/basic weight on a
+    // common fiber. Never a low score from mere ABSENCE of points: that was the
+    // `value < 25` catch-all, removed here (audit 2026-06-16, decisions #1/#2/#3).
     band = "low";
   } else {
     band = "medium";

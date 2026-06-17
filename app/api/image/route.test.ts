@@ -15,6 +15,18 @@ describe("GET /api/image (proxy guards)", () => {
     expect((await GET(req())).status).toBe(400);
   });
 
+  it("rate-limits per IP (429 after the cap) — L1", async () => {
+    // Unique IP so it doesn't share the 'unknown' bucket with other tests.
+    const ip = "203.0.113.77";
+    const make = () =>
+      new Request("http://localhost/api/image", {
+        headers: { "x-forwarded-for": ip },
+      });
+    let last: Response | undefined;
+    for (let i = 0; i < 121; i++) last = await GET(make()); // RATE_MAX = 120
+    expect(last?.status).toBe(429);
+  });
+
   it("400 on an SSRF reserved IP (cloud metadata)", async () => {
     // Literal reserved IP is rejected by assertSafeUrl before any fetch.
     expect((await GET(req("http://169.254.169.254/x.png"))).status).toBe(400);

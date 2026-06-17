@@ -109,6 +109,76 @@ describe("extractText", () => {
   });
 });
 
+describe("extractText — images (A) & embedded JSON (B)", () => {
+  it("collects multiple images (JSON-LD gallery + og), deduped, drops svg/data", () => {
+    const ld = JSON.stringify({
+      "@type": "Product",
+      name: "Tee",
+      image: ["https://cdn.x/1.jpg", "https://cdn.x/2.jpg", "https://cdn.x/logo.svg"],
+    });
+    const html = `<html><head>
+      <meta property="og:image" content="https://cdn.x/2.jpg">
+      <meta name="twitter:image" content="data:image/png;base64,AAAA">
+      <script type="application/ld+json">${ld}</script>
+      </head><body><h1>Tee</h1><p>100% cotton</p></body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    // svg dropped, data: dropped, og 2.jpg deduped vs JSON-LD
+    expect(r.images).toEqual(["https://cdn.x/1.jpg", "https://cdn.x/2.jpg"]);
+  });
+
+  it("resolves a relative image URL against the page", () => {
+    const html = `<html><head><meta property="og:image" content="/img/a.jpg"></head><body><h1>x</h1><p>100% cotton</p></body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    expect(r.images?.[0]).toBe("https://shop.com/img/a.jpg");
+  });
+
+  it("collects gallery <img> (src/srcset/data-src) but not related/nav images (P2.2)", () => {
+    const html = `<html><head></head><body><main>
+      <div class="product-gallery">
+        <a href="/zoom"><img src="https://cdn.x/g1.jpg"></a>
+        <img data-src="https://cdn.x/g2.jpg">
+        <img srcset="https://cdn.x/g3-400.jpg 400w, https://cdn.x/g3-800.jpg 800w">
+      </div>
+      <p>100% cotton</p>
+      <section class="related-products"><img src="https://cdn.x/neighbour.jpg"></section>
+      <nav><img src="https://cdn.x/logo.jpg"></nav>
+      </main></body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    expect(r.images).toEqual([
+      "https://cdn.x/g1.jpg",
+      "https://cdn.x/g2.jpg",
+      "https://cdn.x/g3-400.jpg",
+    ]);
+    expect(r.images).not.toContain("https://cdn.x/neighbour.jpg");
+    expect(r.images).not.toContain("https://cdn.x/logo.jpg");
+  });
+
+  it("reads composition from an embedded JSON island (key-targeted)", () => {
+    const next = JSON.stringify({
+      props: { product: { composition: "95% cotton 5% elastane", unrelated: "noise" } },
+    });
+    const html = `<html><body><h1>Tee</h1>
+      <script id="__NEXT_DATA__" type="application/json">${next}</script>
+      </body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    const p = parse(r.text, { categoryHint: r.categoryHint });
+    expect(p.findings.fiber.value).toBe("95% cotton, 5% elastane");
+  });
+
+  it("does NOT dump the whole JSON blob — only material-key values (anti-neighbour)", () => {
+    const next = JSON.stringify({
+      props: {
+        otherProduct: { title: "99% polyester jacket" }, // not a material key
+        product: { material: "100% cotton" },
+      },
+    });
+    const html = `<html><body><h1>Tee</h1><script id="__NEXT_DATA__" type="application/json">${next}</script></body></html>`;
+    const r = extractText(html, "https://shop.com/p/tee");
+    expect(r.text).toMatch(/100% cotton/i);
+    expect(r.text).not.toMatch(/99% polyester/i);
+  });
+});
+
 describe("hasFabricSignal", () => {
   it("detects composition / GSM / fiber signals", () => {
     expect(hasFabricSignal("Composition: 100% cotton")).toBe(true);
@@ -146,6 +216,45 @@ describe("fetchPage reader fallback", () => {
       const parsed = parse(r.extract.text, { categoryHint: r.extract.categoryHint });
       expect(parsed.category).toBe("shirt");
       expect(parsed.findings.fiber.value).toBe("100% cotton");
+    }
+  });
+
+  // Regression repro (the "no image" bucket): a JS-heavy-but-not-blocked page
+  // (Superdry/Osklen/Zalando) serves og:image in the direct HTML but loads the
+  // composition via JS, so fetchPage falls to the reader. The reader returns
+  // text only — the direct og:image MUST be carried over (A2 merge), or the
+  // result ships with zero images. Pre-A2 (deployed HEAD) returned `reader`
+  // raw, dropping the image -> empty gallery in production.
+  it("carries the direct og:image into the reader-path result (A2 merge)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        const u = String(input);
+        if (u.startsWith("https://r.jina.ai/")) {
+          // Reader renders the JS and returns the composition (text only).
+          return new Response(
+            "Essential Serif Logo T-Shirt. Composition: 100% cotton. 180 GSM.",
+            { status: 200, headers: { "content-type": "text/plain" } },
+          );
+        }
+        // Direct fetch succeeds (200 HTML) and exposes og:image, but the page
+        // text has NO fabric signal (composition is JS-loaded) -> not fast-path.
+        return new Response(
+          `<html><head><meta property="og:image" content="https://images.superdry.de/photo.jpg"></head><body><h1>Essential Serif Logo Tee</h1><p>Crew neck. Short sleeve. Style 279271. Loose fit.</p></body></html>`,
+          { status: 200, headers: { "content-type": "text/html" } },
+        );
+      }),
+    );
+
+    const r = await fetchPage(
+      "https://www.superdry.de/herren/t-shirts/essential-serif-logo-t-shirt-279271.html",
+    );
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      // Composition came from the reader...
+      expect(r.extract.text.toLowerCase()).toContain("100% cotton");
+      // ...and the photo survived from the direct fetch (the bug, fixed).
+      expect(r.extract.images).toEqual(["https://images.superdry.de/photo.jpg"]);
     }
   });
 

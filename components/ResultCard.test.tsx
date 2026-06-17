@@ -114,3 +114,30 @@ describe("ResultCard — verified reference block (decisão #4)", () => {
     expect(out).not.toContain("Our rating");
   });
 });
+
+describe("ResultCard — image gallery (A3)", () => {
+  it("renders up to 4 images via the same-origin proxy (capped)", () => {
+    const out = html(
+      ok({
+        images: [
+          "https://cdn.x/1.jpg",
+          "https://cdn.x/2.jpg",
+          "https://cdn.x/3.jpg",
+          "https://cdn.x/4.jpg",
+          "https://cdn.x/5.jpg",
+        ],
+      }),
+    );
+    const imgs = out.match(/<img /g) ?? [];
+    expect(imgs.length).toBe(4); // capped at 4 in the UI
+    expect(out).toContain(
+      `/api/image?src=${encodeURIComponent("https://cdn.x/1.jpg")}`,
+    );
+    expect(out).toContain('loading="eager"'); // first image eager
+    expect(out).toContain('loading="lazy"'); // the rest lazy
+  });
+
+  it("renders no gallery when there are no images", () => {
+    expect(html(ok({}))).not.toContain("/api/image");
+  });
+});

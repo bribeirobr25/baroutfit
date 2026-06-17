@@ -33,6 +33,55 @@ export const CORPUS: CorpusItem[] = [
     name: "hollister-heavy (generic cotton, 235gsm)",
     text: "Hollister Boxy Heavyweight Cotton Crew T-Shirt. 100% cotton. 235 GSM. Boxy fit.",
   },
+  // Reproduction of the owner's reported "low" symptom (audit 2026-06-16): a
+  // plain cotton JERSEY tee with NO GSM stated. The snapshot here is the ground
+  // truth for diagnosing/fixing step C (do not blind-update).
+  {
+    name: "hugoboss-jersey-tee (generic cotton, jersey, no GSM) — repro",
+    text: "Hugo Boss Regular Fit T-Shirt aus Baumwoll-Jersey. 100% Baumwolle.",
+    hint: "tshirt",
+  },
+  {
+    name: "generic-jersey-tee-nogsm (generic cotton, jersey, no GSM) — repro",
+    text: "Crew neck t-shirt. 100% cotton. Jersey knit.",
+    hint: "tshirt",
+  },
+  // Reproduction of the LATENT `value < 25 -> low` bug the auditor predicted
+  // (2026-06-16): a generic shirt with a weak corroborator (non-iron) but no
+  // GSM. It escapes the !hasCorroboration guard (nonIron corroborates) and hits
+  // value<25 -> a FALSE "low". This is the absence->judgment bug, still active.
+  {
+    name: "noniron-generic-shirt-nogsm — repro latent value<25 low",
+    text: "Non-iron dress shirt. 100% cotton.",
+    hint: "shirt",
+  },
+  // GUARD (audit 2026-06-16): a genuinely light-weight generic tee MUST stay
+  // "low" after P1 removes value<25 — its `low` comes from real negative
+  // evidence (gsmQuality<=1 && !goodFiber), not the catch-all. value here is
+  // >= 25, so if it reads `low` it proves the negative-evidence path fires
+  // independently of value<25. Re-baseline after P1 must keep this `low`.
+  {
+    name: "lightweight-generic-tee-140gsm — guard: legit low survives P1",
+    text: "Lightweight cotton t-shirt. 100% cotton. Jersey. 140 g/m².",
+    hint: "tshirt",
+  },
+  // Repro: Kiton-class — generic fiber (we don't detect Giza), informative weave
+  // + construction, NO GSM. Reads `low` today (value<25); should become `medium`
+  // after P1 (corroborated, no negative evidence). The audited #4 block still
+  // shows the real tier for these.
+  {
+    name: "kiton-class-poplin-noGSM — repro premium shirt false low",
+    text: "Camicia. 100% cotton. Poplin. Mother-of-pearl buttons. Hand-made in Napoli.",
+    hint: "shirt",
+  },
+  // Repro for decision #3: the ONLY corroboration is a SINGLE construction token,
+  // no GSM/weave. Reads `low` today; should become `indeterminate` after P1
+  // (one thin signal isn't enough to grade).
+  {
+    name: "generic-1construction-noGSM — repro decision #3",
+    text: "Cotton t-shirt. 100% cotton. Twin-needle stitching.",
+    hint: "tshirt",
+  },
   {
     name: "merz-215 (GOTS organic, loopwheeled, 7.2oz)",
     text: "Merz b. Schwanen 215 T-Shirt. 100% GOTS organic cotton. Loopwheeled in Germany. 7.2 oz/sq.yd.",

@@ -189,6 +189,48 @@ describe("parser — scoring & wrinkle edge cases", () => {
     expect(r.score.band).toBe("low");
   });
 
+  it("plain cotton jersey tee with NO GSM is indeterminate, not low (audit 2026-06-16)", () => {
+    // jersey is the default tee knit -> it alone must not corroborate quality.
+    // Without GSM there is no negative evidence, so the honest verdict is "not
+    // enough data", never "low".
+    const r = parse("Regular fit t-shirt. 100% cotton. Jersey knit.");
+    expect(r.findings.weave.value).toBe("jersey");
+    expect(r.findings.gsm.value).toBeNull();
+    expect(r.score.band).toBe("indeterminate");
+  });
+
+  // Evidence model (P1, audit 2026-06-16): `low` requires NAMED negative
+  // evidence; absence -> indeterminate. nonIron / a lone construction token do
+  // not corroborate quality.
+  it("non-iron generic shirt with no GSM is indeterminate, not low", () => {
+    const r = parse("Non-iron dress shirt. 100% cotton.");
+    expect(r.findings.nonIron.value).toBe(true);
+    expect(r.score.band).toBe("indeterminate");
+  });
+
+  it("a single construction token alone is indeterminate, not low (decision #3)", () => {
+    const r = parse("Cotton t-shirt. 100% cotton. Twin-needle stitching.");
+    expect(r.findings.construction).toContain("twin-needle stitching");
+    expect(r.findings.gsm.value).toBeNull();
+    expect(r.score.band).toBe("indeterminate");
+  });
+
+  it("generic shirt: informative weave + construction, no GSM -> medium, not low", () => {
+    // Kiton-class: previously a FALSE 'low'; now 'honestly good' (corroborated,
+    // no negative evidence). The audited-brand block surfaces the real tier.
+    const r = parse("Camicia. 100% cotton. Poplin. Mother-of-pearl buttons.");
+    expect(r.findings.weave.value).toBe("poplin");
+    expect(r.score.band).toBe("medium");
+  });
+
+  it("genuinely light-GSM generic tee still reads low (negative evidence survives)", () => {
+    // Guard: removing value<25 must NOT let real light fabric ride up to medium.
+    const r = parse("Lightweight cotton t-shirt. 100% cotton. Jersey. 140 g/m².");
+    expect(r.findings.gsm.value).toBe(140);
+    expect(r.score.value).toBeGreaterThanOrEqual(25); // proves it's NOT via value<25
+    expect(r.score.band).toBe("low");
+  });
+
   it("polyester-dominant blend abstains (out-of-scope), wrinkle still answered", () => {
     const r = parse("1/4 zip work shirt. 65% polyester, 35% cotton.");
     expect(r.findings.polyester.value).toBe(65);

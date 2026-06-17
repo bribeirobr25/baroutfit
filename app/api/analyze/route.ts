@@ -146,7 +146,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     wrinkle: parsed.wrinkle,
     brandMatch,
     recommendations,
-    ...(fetched.extract.image ? { image: fetched.extract.image } : {}),
+    ...(fetched.extract.images?.length ? { images: fetched.extract.images } : {}),
     confidence: parsed.confidence,
     ...(process.env.NODE_ENV !== "production"
       ? { rawNotes: `host=${safeHost(url)} thin=${fetched.extract.thin}` }

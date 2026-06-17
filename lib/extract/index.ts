@@ -12,7 +12,7 @@ export interface ExtractResult {
   text: string;
   categoryHint: CategoryResult;
   thin: boolean; // true when too little product text was found (likely SPA)
-  image?: string; // product image URL (og:image / JSON-LD), if the page exposes one
+  images?: string[]; // product image URLs (JSON-LD gallery / og / twitter), capped
 }
 
 export type FetchResult =
@@ -139,7 +139,7 @@ function collectFromProducts(
     collectFromProducts(val, out, images, depth + 1);
 }
 
-function jsonLdNodes($: cheerio.CheerioAPI): { text: string; image?: string } {
+function jsonLdNodes($: cheerio.CheerioAPI): { text: string; images: string[] } {
   const chunks: string[] = [];
   const images: string[] = [];
   $('script[type="application/ld+json"]').each((_, el) => {
@@ -151,7 +151,43 @@ function jsonLdNodes($: cheerio.CheerioAPI): { text: string; image?: string } {
       // malformed JSON-LD — ignore, never throw on a single shop's quirk
     }
   });
-  return { text: chunks.join(". "), image: images[0] };
+  return { text: chunks.join(". "), images };
+}
+
+// --- Embedded product JSON (B) ----------------------------------------------
+// Many PDPs ship the composition in a JSON island (<script type="application/
+// json">, __NEXT_DATA__) rather than visible HTML/JSON-LD. We do NOT dump the
+// whole blob (a SPA state can hold many products -> a neighbour's fabric =
+// invented data). Instead we collect only the string VALUES of material-ish
+// keys; the parser's prose-rejection + dedup still apply.
+const MATERIAL_KEY_RE =
+  /composition|material|fabric|fibre|fiber|stoff|zusammensetzung|composic|materia|tecid/i;
+
+function collectMaterialValues(node: unknown, out: string[], depth = 0): void {
+  if (depth > 12 || node == null || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const x of node) collectMaterialValues(x, out, depth + 1);
+    return;
+  }
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+    if (MATERIAL_KEY_RE.test(k) && typeof v === "string" && v.trim()) out.push(v);
+    collectMaterialValues(v, out, depth + 1);
+  }
+}
+
+function embeddedJsonText($: cheerio.CheerioAPI): string {
+  const out: string[] = [];
+  $('script[type="application/json"], script#__NEXT_DATA__').each((_, el) => {
+    const raw = $(el).contents().text();
+    if (!raw.trim() || raw.length > 2_000_000) return; // skip empty/huge blobs
+    try {
+      collectMaterialValues(JSON.parse(raw), out);
+    } catch {
+      // not valid JSON — ignore
+    }
+  });
+  // Dedup so a repeated value doesn't dominate; cap to bound noise.
+  return [...new Set(out)].slice(0, 12).join(". ");
 }
 
 const PRODUCT_SELECTORS = [
@@ -175,10 +211,20 @@ export function extractText(html: string, url: string): ExtractResult {
 
   // Read JSON-LD and meta BEFORE stripping <script> (JSON-LD lives in a script
   // tag). Then remove scripts and the rest of the page chrome.
-  const { text: jsonld, image: jsonldImage } = jsonLdNodes($);
+  const { text: jsonld, images: jsonldImages } = jsonLdNodes($);
+  const embedded = embeddedJsonText($); // composition from JSON islands (B)
   const metaDesc = $('meta[name="description"]').attr("content") ?? "";
   const ogTitle = $('meta[property="og:title"]').attr("content") ?? "";
-  const ogImage = $('meta[property="og:image"]').attr("content") ?? "";
+  // Image candidates, before stripping (gallery <a>/<img> get removed below).
+  // Priority: JSON-LD gallery (usually ordered) -> og -> twitter -> image_src.
+  const ogImages = $('meta[property="og:image"], meta[property="og:image:url"]')
+    .map((_, el) => $(el).attr("content") ?? "")
+    .get();
+  const twImages = $('meta[name="twitter:image"], meta[property="twitter:image"]')
+    .map((_, el) => $(el).attr("content") ?? "")
+    .get();
+  const linkImg = $('link[rel="image_src"]').attr("href") ?? "";
+  const imageCandidates = [...jsonldImages, ...ogImages, ...twImages, linkImg];
   const title = $("title").first().text();
 
   $("script, style, noscript, svg, iframe, template").remove();
@@ -219,6 +265,28 @@ export function extractText(html: string, url: string): ExtractResult {
     ].join(", "),
   ).remove();
 
+  // Gallery <img> (P2.2): collected AFTER the chrome strip (related/nav already
+  // gone) but BEFORE <a> removal (zoom links wrap product imgs). Conservative —
+  // only product-gallery/media containers, to avoid thumbnails/related. Lowest
+  // priority (after meta/JSON-LD). Reads src / data-src / first srcset URL.
+  const galleryImgs: string[] = [];
+  $(
+    [
+      '[class*="gallery" i] img',
+      '[class*="product-media" i] img',
+      '[class*="product__media" i] img',
+      '[class*="product-image" i] img',
+      '[class*="productimage" i] img',
+      '[class*="pdp" i] img',
+    ].join(", "),
+  ).each((_, el) => {
+    const a = $(el);
+    const fromSrcset =
+      (a.attr("srcset") || a.attr("data-srcset") || "").split(",")[0]?.trim().split(/\s+/)[0] ?? "";
+    const src = a.attr("src") || a.attr("data-src") || fromSrcset;
+    if (src) galleryImgs.push(src);
+  });
+
   // Strip link text. Product facts (composition, GSM, weave) live in
   // descriptions and spec tables, never in links; nav/category/collection/
   // related items ARE links (e.g. a "…/collections/denim" mega-menu link that
@@ -241,7 +309,7 @@ export function extractText(html: string, url: string): ExtractResult {
     if (t) containerParts.push(t);
   });
 
-  let text = [title, ogTitle, metaDesc, jsonld, ...containerParts]
+  let text = [title, ogTitle, metaDesc, jsonld, embedded, ...containerParts]
     .join(". ")
     .replace(/\s+/g, " ")
     .trim();
@@ -258,20 +326,32 @@ export function extractText(html: string, url: string): ExtractResult {
   let categoryHint = categoryFromUrl(url);
   if (categoryHint === "unknown") categoryHint = categoryFromUrl(jsonld);
 
-  // Product image: prefer og:image (the page's own social card), then JSON-LD.
-  // Resolved to an absolute http(s) URL; relative paths are resolved vs the page.
-  const image = resolveImage(ogImage, url) ?? resolveImage(jsonldImage, url);
+  // Product images: resolve each candidate to an absolute http(s) URL, dedupe,
+  // and cap. Order preserves source priority (JSON-LD gallery first).
+  const seen = new Set<string>();
+  const images: string[] = [];
+  for (const cand of [...imageCandidates, ...galleryImgs]) {
+    const r = resolveImage(cand, url);
+    if (r && !seen.has(r)) {
+      seen.add(r);
+      images.push(r);
+      if (images.length >= MAX_IMAGES) break;
+    }
+  }
 
   return {
     text,
     categoryHint,
     thin: productLen < THIN_TEXT_THRESHOLD,
-    ...(image ? { image } : {}),
+    ...(images.length ? { images } : {}),
   };
 }
 
+const MAX_IMAGES = 5;
+
 // Resolve an image candidate to an absolute http(s) URL (vs the page URL).
-// Returns undefined for missing/relative-unresolvable/non-web values.
+// Returns undefined for missing/relative/non-web values or SVG (logos/icons).
+// `data:` URIs are rejected too (their protocol isn't http(s)) — L3.
 function resolveImage(
   candidate: string | undefined,
   base: string,
@@ -279,7 +359,9 @@ function resolveImage(
   if (!candidate) return undefined;
   try {
     const u = new URL(candidate, base);
-    if (u.protocol === "http:" || u.protocol === "https:") return u.toString();
+    if (u.protocol !== "http:" && u.protocol !== "https:") return undefined;
+    if (/\.svg($|\?)/i.test(u.pathname)) return undefined;
+    return u.toString();
   } catch {
     // ignore unparseable
   }
@@ -515,7 +597,25 @@ async function fetchViaReader(url: string): Promise<ExtractResult | null> {
     if (raw.length < 40) return null;
 
     const text = focusReaderText(raw);
-    return { text, categoryHint: categoryFromUrl(url), thin: false };
+    // Markdown images from the FOCUSED product window (P2.2) — less nav/logo
+    // noise than the raw page. Capped. fetchPage prefers direct images, so these
+    // only surface when the direct fetch yielded none (fully blocked pages).
+    const imgs: string[] = [];
+    const seenImg = new Set<string>();
+    for (const m of text.matchAll(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g)) {
+      const r = resolveImage(m[1], url);
+      if (r && !seenImg.has(r)) {
+        seenImg.add(r);
+        imgs.push(r);
+        if (imgs.length >= 3) break;
+      }
+    }
+    return {
+      text,
+      categoryHint: categoryFromUrl(url),
+      thin: false,
+      ...(imgs.length ? { images: imgs } : {}),
+    };
   } catch {
     return null;
   } finally {
@@ -538,7 +638,17 @@ export async function fetchPage(url: string): Promise<FetchResult> {
   // Fallback: blocked, thin, or no fabric signal -> try the reader proxy.
   const reader = await fetchViaReader(url);
   if (reader && hasFabricSignal(reader.text)) {
-    return { ok: true, extract: reader };
+    // The reader returns text only (no images). We already fetched the direct
+    // HTML — carry its images over so a JS-heavy-but-not-blocked page (e.g.
+    // Superdry: og:image present, composition JS-loaded) keeps its photo (A2).
+    const directImages = direct.ok ? direct.extract.images : undefined;
+    return {
+      ok: true,
+      extract: {
+        ...reader,
+        ...(directImages && directImages.length ? { images: directImages } : {}),
+      },
+    };
   }
 
   // Reader didn't help. Prefer returning a (thin) direct read over a hard

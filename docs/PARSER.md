@@ -95,7 +95,7 @@ Esquema sugerido (o Claude Code pode refinar, mas mantenha a ordem de prioridade
 **Bands:**
 - `high` — fibra boa confirmada + (tecelagem adequada ou GSM premium) + algum sinal de construção.
 - `medium` — algodão comum confirmado, GSM ok, sem sinais premium.
-- `low` — leve demais / sinais fracos COM corroboração (evidência negativa real, nunca ausência de dado).
+- `low` — **só com evidência NEGATIVA nomeada** (GSM leve declarado + fibra comum), nunca um score baixo por ausência de pontos (ver P1, 2026-06-16).
 - `indeterminate` — **dado insuficiente** (ex.: "100% cotton" e nada mais). NÃO é nota baixa; o veredito deve dizer "faltam dados para concluir".
 - `out-of-scope` — **fibra fora do nosso critério** (ver Fase A abaixo). A peça foi lida, mas a fibra dominante não é algodão/merino/TENCEL. Honestamente abstemo-nos em vez de fingir uma nota.
 
@@ -104,6 +104,8 @@ Esquema sugerido (o Claude Code pode refinar, mas mantenha a ordem de prioridade
 > **Fase A — abstenção honesta e fim da inflação por orgânico (2026-06-15):**
 > - **`out-of-scope` (decidir pela COMPOSIÇÃO):** o motor só pontua o que tem critério real — **algodão (todos os tipos), merino e os celulósicos Lenzing (TENCEL/lyocell, modal)**. Toda outra fibra (poliéster, seda, linho, lã não-merino, viscose, poliamida, cashmere) é **reconhecida mas não graduada**. O escopo decide-se pela composição (que carrega essas fibras com `%`), **nunca** pelo `fiberType` (cego a não-algodão). Regra de blend: a peça é IN_SCOPE se a **soma das fibras in-scope ≥ 60%** (assim um blend de duas in-scope, ex. 50% algodão + 50% TENCEL, soma 100% e é graduado; já 50/50 algodão-poliéster abstém-se). Composição vazia (nenhuma fibra lida) **não** é abstenção → cai em `indeterminate`. Isto corrige o único caso em que o app **mentia com confiança**: poliéster alto antes virava `low`; agora abstém-se. O `wrinkle` continua sendo respondido (universal: poli ≥ 50% → low, linho → high, malha → low). Cada fibra que ganhar critério real no futuro (Fase E) **sai** da abstenção.
 > - **Orgânico não é eixo de qualidade:** `organic` é rótulo de sustentabilidade/agronomia (pode ser fibra curta upland), graduado como base (= `generic`, qualidade 1), e **não** conta como "fibra boa". O comprimento de fibra (long-staple/ELS) e as fibras premium seguem como os drivers reais. Certificações (GOTS/OEKO-TEX/bluesign) são eixo eco/segurança — detecção como findings separados fica para fase futura.
+
+> **P1 — modelo de evidência (2026-06-16, atualiza a corroboração de 2026-06-07):** `low` exige **evidência NEGATIVA nomeada** (`gsmQuality ≤ 1 && !goodFiber`); o catch-all `value < 25` foi **removido** (gerava "low" por ausência de pontos — ex.: Hugo Boss, Kiton, camisa non-iron). **Corroboração** (o que tira de `indeterminate`) = **GSM, weave informativo (≠ jersey), fiação premium, ou construção ≥ 2 tokens**. **NÃO corroboram:** `nonIron` (tratamento, 0 de value), `jersey` (malha default), e **1 token de construção isolado**. Sem corroboração → `indeterminate`; corroborado sem evidência negativa → `medium`. O `value` (0–100) segue exibido, mas não decide a banda.
 
 A UI deve sempre mostrar **o que sustentou o score** (findings verificados), nunca só o número.
 

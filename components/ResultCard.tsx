@@ -133,16 +133,23 @@ export function ResultCard({ data }: { data: AnalyzeOk }) {
 
   return (
     <article className="atl-tag atl-hairline relative overflow-hidden rounded-3xl border border-line bg-paper-raised shadow-[0_40px_90px_-40px_rgba(0,0,0,0.9)]">
-      {/* product image (Fase B), proxied same-origin so the CSP stays closed */}
-      {data.image && (
+      {/* product gallery — proxied same-origin so the CSP stays closed. A
+          horizontal scroll-snap strip (mobile-first); first image eager, the
+          rest lazy. Capped to bound proxy fetches. */}
+      {data.images && data.images.length > 0 && (
         <div className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`/api/image?src=${encodeURIComponent(data.image)}`}
-            alt={dict.category[data.category]}
-            loading="lazy"
-            className="max-h-72 w-full bg-paper object-contain"
-          />
+          <div className="flex snap-x snap-mandatory overflow-x-auto">
+            {data.images.slice(0, 4).map((src, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={src}
+                src={`/api/image?src=${encodeURIComponent(src)}`}
+                alt={dict.category[data.category]}
+                loading={i === 0 ? "eager" : "lazy"}
+                className="max-h-96 w-full shrink-0 snap-center bg-paper object-contain"
+              />
+            ))}
+          </div>
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-paper-raised via-transparent to-transparent"

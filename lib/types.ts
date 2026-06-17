@@ -141,9 +141,10 @@ export interface AnalyzeOk {
   // Fase B: audited pieces we trust in the same category (may be empty — the KB
   // only covers tshirt/shirt). Advice, kept visually separate from the verdict.
   recommendations: Recommendation[];
-  // Fase B: product image URL read from the page (og:image / JSON-LD), shown via
-  // the same-origin /api/image proxy. Absent when the page exposes none.
-  image?: string;
+  // Product image URLs read from the page (JSON-LD gallery / og / twitter),
+  // shown via the same-origin /api/image proxy as a gallery. Absent when the
+  // page exposes none. Capped in the extractor.
+  images?: string[];
   confidence: Confidence;
   rawNotes?: string; // debug only, not shown to the user
 }
